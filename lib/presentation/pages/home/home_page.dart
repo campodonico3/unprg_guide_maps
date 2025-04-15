@@ -4,6 +4,7 @@ import "package:unprg_guide_maps/data/models/faculty_item.dart";
 import "package:unprg_guide_maps/data/repositories/faculty_repository.dart";
 import "package:unprg_guide_maps/presentation/pages/home/widgets/faculty_card.dart";
 import "package:unprg_guide_maps/presentation/pages/home/widgets/search_bar_widget.dart";
+import "package:unprg_guide_maps/presentation/pages/map/map_page.dart";
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,23 +13,24 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin{
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final FacultyRepository _facultyRepository = FacultyRepository();
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
-  void dispose(){
+  void dispose() {
     _tabController.dispose();
     super.dispose();
   }
 
-    @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -161,10 +163,15 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       backgroundColor: AppColors.primary,
       child: const Icon(Icons.map, color: Colors.white),
       onPressed: () {
-        // Acción al presionar el botón flotante
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              return const MapPage();
+            },
+          ),
+        );
       },
     );
   }
 }
-
-
