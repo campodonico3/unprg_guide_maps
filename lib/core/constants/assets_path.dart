@@ -8,4 +8,5 @@ class AssetsPath {
   // images de onbording
   static const String onboardingImage1  = "assets/images/fondo1.jpeg";
   static const String onboardingImage2  = "assets/images/presentacion1.png";
+  static const String onboardingImage3 = "assets/images/img_presentacion_1.png";
 }

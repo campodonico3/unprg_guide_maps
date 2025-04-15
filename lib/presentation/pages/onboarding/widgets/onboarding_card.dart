@@ -47,7 +47,7 @@ class OnboardingCard extends StatelessWidget {
                   height: 1.2,
                 ),
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 20),
             ],
           ),
         ),

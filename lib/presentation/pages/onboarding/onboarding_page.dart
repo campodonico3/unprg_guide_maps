@@ -19,7 +19,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       OnboardingCardData(
         title: 'BIENVENIDO A\n\'UNIVERSIDAD MAPS\'',
         subtitle: 'Tu guía en el campus universitario',
-        image: AssetsPath.onboardingImage2,
+        image: AssetsPath.onboardingImage3,
         backgroundColor: AppColors.primary,
         titleColor: Colors.white,
         subtitleColor: Colors.white,
@@ -27,7 +27,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       OnboardingCardData(
         title: 'Aquí encontrarás distintos puntos del campus',
         subtitle: 'Edificios, facultades y áreas comunes',
-        image: AssetsPath.onboardingImage1,
+        image: AssetsPath.onboardingImage3,
         backgroundColor: AppColors.secondary,
         titleColor: Colors.white,
         subtitleColor: Colors.white,
@@ -35,7 +35,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       OnboardingCardData(
         title: 'Podrás llegar a tiempo a tus clases',
         subtitle: 'Con rutas optimizadas y búsqueda fácil',
-        image: AssetsPath.onboardingImage1,
+        image: AssetsPath.onboardingImage3,
         backgroundColor: AppColors.accent,
         titleColor: Colors.white,
         subtitleColor: Colors.white,

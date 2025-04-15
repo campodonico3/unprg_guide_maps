@@ -1,4 +1,4 @@
-class Faculty {
+/*class Faculty {
   final String fullName;
   final String acronym;
   final String logoPath;
@@ -42,4 +42,4 @@ final List<Faculty> faculties = [
     acronym: 'FIME',
     logoPath: 'assets/images/logos/ing_mecanica.png',
   ),
-];
+];*/
