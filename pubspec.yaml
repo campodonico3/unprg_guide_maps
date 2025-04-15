@@ -17,6 +17,7 @@ dependencies:
 
   cupertino_icons: ^1.0.8
   concentric_transition: ^1.0.3
+  marquee: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -33,6 +34,7 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/images/facultades/
     - assets/images/unprg_logo.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
