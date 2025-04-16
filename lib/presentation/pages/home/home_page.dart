@@ -4,7 +4,7 @@ import "package:unprg_guide_maps/data/models/faculty_item.dart";
 import "package:unprg_guide_maps/data/repositories/faculty_repository.dart";
 import "package:unprg_guide_maps/presentation/pages/home/widgets/faculty_card.dart";
 import "package:unprg_guide_maps/presentation/pages/home/widgets/search_bar_widget.dart";
-import "package:unprg_guide_maps/presentation/pages/map/map_page.dart";
+import "package:unprg_guide_maps/presentation/pages/map/mapbox_page.dart";
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -167,7 +167,7 @@ class _HomePageState extends State<HomePage>
           context,
           MaterialPageRoute(
             builder: (context) {
-              return const MapPage();
+              return const MapboxMapPage();
             },
           ),
         );
