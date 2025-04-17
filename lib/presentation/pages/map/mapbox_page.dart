@@ -56,7 +56,6 @@ class _MapboxMapPageState extends State<MapboxMapPage> {
       onMapCreated: _onMapCreated,
       onStyleLoadedListener: (styleLoaded) {
         debugPrint('Estilo del mapa cargado');
-        _addBuildingMarkers();
       },
     );
   }
@@ -65,7 +64,13 @@ class _MapboxMapPageState extends State<MapboxMapPage> {
     setState(() {
       mapboxMap = map;
     });
+
+    Future.delayed(Duration(milliseconds: 500), (){
+      _addBuildingMarkers();
+    });
+
   }
+
 
   Future<void> _addBuildingMarkers() async {
     // Asegúrate de que el mapa se haya inicializado
@@ -107,7 +112,7 @@ class _MapboxMapPageState extends State<MapboxMapPage> {
           // Usar 'image' para proporcionar directamente los bytes de la imagen
           image: imageBytes,
           // Tamaño del icono
-          iconSize: 0.5,
+          iconSize: 1.0,
           // Campo de texto para mostrar el nombre
           textField: building['name'].toString(),
           // Tamaño del texto
