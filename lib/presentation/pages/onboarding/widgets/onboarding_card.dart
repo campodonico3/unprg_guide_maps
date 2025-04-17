@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:unprg_guide_maps/core/constants/app_style.dart';
 
 class OnboardingCardData {
   final String title;
@@ -40,12 +41,17 @@ class OnboardingCard extends StatelessWidget {
               ),
               Text(
                 data.title,
-                style: TextStyle(
+                style: AppTextStyles.bold.copyWith(
+                  color: data.titleColor,
+                  fontSize: 28,
+                  height: 1.2,
+                ),
+                /*style: TextStyle(
                   color: data.titleColor,
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   height: 1.2,
-                ),
+                ),*/
               ),
               const SizedBox(height: 20),
             ],

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:unprg_guide_maps/core/constants/app_colors.dart';
+import 'package:unprg_guide_maps/core/constants/app_style.dart';
 import 'package:unprg_guide_maps/core/constants/assets_path.dart';
 
 class AnimatedLogo extends StatefulWidget {
@@ -49,14 +51,13 @@ class _AnimatedLogoState extends State<AnimatedLogo>
             height: 200,
           ),
           SizedBox(height: 20),
-          const Text(
+          Text(
             "University Maps Guide",
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue,
+            style: AppTextStyles.black.copyWith(
+              fontSize: 26,
+              color: AppColors.primary,
             ),
-          )
+          ),
         ],
       ),
     );

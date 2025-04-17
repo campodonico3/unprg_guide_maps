@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:unprg_guide_maps/core/constants/app_colors.dart';
+import 'package:unprg_guide_maps/core/constants/app_style.dart';
 
 class SearchBarWidget extends StatelessWidget {
   final Function(String) onSearchChanged;
@@ -33,7 +34,11 @@ class SearchBarWidget extends StatelessWidget {
         onChanged: onSearchChanged,
         decoration: InputDecoration(
           hintText: 'Buscar facultad, oficina o aula...',
-          hintStyle: TextStyle(color: AppColors.textSecondary),
+          hintStyle: AppTextStyles.light.copyWith(
+            color: AppColors.textSecondary,
+            fontSize: 14,
+          ),
+          /*TextStyle(color: AppColors.textSecondary),*/
           prefixIcon: Icon(Icons.search, color: AppColors.primary),
           suffixIcon: IconButton(
             icon: Icon(Icons.clear, color: AppColors.primary),

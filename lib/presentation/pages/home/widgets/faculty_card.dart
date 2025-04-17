@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:unprg_guide_maps/core/constants/app_colors.dart';
+import 'package:unprg_guide_maps/core/constants/app_style.dart';
 import 'package:unprg_guide_maps/presentation/pages/home/widgets/marquee_on_old.dart';
 
 class FacultyCard extends StatelessWidget {
@@ -36,17 +38,26 @@ class FacultyCard extends StatelessWidget {
                 children: [
                   Text(
                     sigla,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
+                    style: AppTextStyles.black.copyWith(
                       fontSize: 16,
                       color: Colors.blueAccent,
                     ),
+                    
+                    /*TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.blueAccent,
+                    ),*/
                   ),
                   MarqueeOnOld(
                     text: name,
-                    textStyle: const TextStyle(
+                    textStyle: AppTextStyles.regular.copyWith(
                       fontSize: 14,
+                      color: AppColors.black,
                     ),
+                    /*TextStyle(
+                      fontSize: 14,
+                    ),*/
                     height: 60,
                   )
                 ],

@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:unprg_guide_maps/core/constants/app_colors.dart";
+import "package:unprg_guide_maps/core/constants/app_style.dart";
 import "package:unprg_guide_maps/data/models/faculty_item.dart";
 import "package:unprg_guide_maps/data/repositories/faculty_repository.dart";
 import "package:unprg_guide_maps/presentation/pages/home/widgets/faculty_card.dart";
@@ -106,10 +107,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       elevation: 0,
       title: const Text(
         "Guide University Maps",
-        style: TextStyle(
-          color: AppColors.textOnPrimary,
-          fontWeight: FontWeight.bold,
-        ),
+        style: AppTextStyles.bold,
       ),
       actions: [
         IconButton(
@@ -137,15 +135,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           bottomRight: Radius.circular(30),
         ),
       ),
-      child: const Center(
+      child: Center(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             '¿A dónde quieres ir hoy?',
-            style: TextStyle(
+            style: AppTextStyles.light.copyWith(
               color: AppColors.textOnPrimary,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+              fontSize: 24,
             ),
           ),
         ),
@@ -171,8 +168,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         indicatorColor: AppColors.primary,
         labelColor: AppColors.primary,
         unselectedLabelColor: AppColors.textSecondary,
+        labelStyle: AppTextStyles.bold.copyWith(fontSize: 14),
+        unselectedLabelStyle: AppTextStyles.regular.copyWith(fontSize: 12),
         tabs: const [
-          Tab(text: 'FACULTADES'),
+          Tab(text: 'FACULTADES',),
           Tab(text: 'OFICINAS'),
         ],
       ),
@@ -202,10 +201,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             Text(
               'No se encontraron resultados para "$_searchQuery"',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: AppTextStyles.regular.copyWith(
+                color: AppColors.neutral,
                 fontSize: 16,
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
               ),
             ),
           ],
