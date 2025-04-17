@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:unprg_guide_maps/core/constants/app_colors.dart';
 
-
 class SearchBarWidget extends StatelessWidget {
-  const SearchBarWidget({super.key});
+  final Function(String) onSearchChanged;
+  final TextEditingController controller;
+
+  const SearchBarWidget({
+    super.key,
+    required this.onSearchChanged,
+    required this.controller,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,11 +29,19 @@ class SearchBarWidget extends StatelessWidget {
         ],
       ),
       child: TextField(
+        controller: controller,
+        onChanged: onSearchChanged,
         decoration: InputDecoration(
           hintText: 'Buscar facultad, oficina o aula...',
           hintStyle: TextStyle(color: AppColors.textSecondary),
           prefixIcon: Icon(Icons.search, color: AppColors.primary),
-          suffixIcon: Icon(Icons.mic, color: AppColors.primary),
+          suffixIcon: IconButton(
+            icon: Icon(Icons.clear, color: AppColors.primary),
+            onPressed: () {
+              controller.clear();
+              onSearchChanged('');
+            },
+          ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 15),
         ),

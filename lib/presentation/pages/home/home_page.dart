@@ -13,21 +13,74 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>
-    with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final FacultyRepository _facultyRepository = FacultyRepository();
+
+  late List<FacultyItem> _faculties;
+  late List<FacultyItem> _offices;
+
+  late List<FacultyItem> _filteredFaculties;
+  late List<FacultyItem> _filteredOffices;
+
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+
+    // Inicializar las listas
+    _faculties = _facultyRepository.getFaculties();
+    _offices = _facultyRepository.getOfficies();
+
+    _filteredFaculties = _faculties;
+    _filteredOffices = _offices;
+
+    // Escuchar cambios de pestañas para actualizar la búsqueda
+    _tabController.addListener(_handleTabChange);
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_handleTabChange);
     _tabController.dispose();
+    _searchController.dispose();
     super.dispose();
+  }
+
+  // Método para manejar el cambio de pestaña
+  void _handleTabChange(){
+    if (_tabController.indexIsChanging){
+      _filterItems(_searchQuery);
+    }
+  }
+
+  // Método para filtrar los elementos según la búsqueda
+  void _filterItems(String query) {
+    setState(() {
+      _searchQuery = query.toLowerCase();
+
+      if (_searchQuery.isEmpty){
+        // Si no hay busqueda, mostrar todos los elementos
+        _filteredFaculties = _faculties;
+        _filteredOffices = _offices;
+
+      }else{
+        // Filtrar facultades
+        _filteredFaculties = _faculties.where((faculty) {
+          return faculty.name.toLowerCase().contains(_searchQuery) ||
+              faculty.sigla.toLowerCase().contains(_searchQuery);
+        }).toList();
+
+        // Filtrar oficinas
+        _filteredOffices = _offices.where((office) {
+          return office.name.toLowerCase().contains(_searchQuery) ||
+              office.sigla.toLowerCase().contains(_searchQuery);
+        }).toList();
+      }
+    });
   }
 
   @override
@@ -101,9 +154,12 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget _buildSearchBar() {
-    return const Padding(
-      padding: EdgeInsets.only(top: 20, left: 16, right: 16),
-      child: SearchBarWidget(),
+    return Padding(
+      padding: const EdgeInsets.only(top: 20, left: 16, right: 16),
+      child: SearchBarWidget(
+        controller: _searchController,
+        onSearchChanged: _filterItems,
+      ),
     );
   }
 
@@ -128,14 +184,34 @@ class _HomePageState extends State<HomePage>
       child: TabBarView(
         controller: _tabController,
         children: [
-          _buildLocationGrid(_facultyRepository.getFaculties()),
-          _buildLocationGrid(_facultyRepository.getOfficies()),
+          _buildLocationGrid(_filteredFaculties),
+          _buildLocationGrid(_filteredOffices),
         ],
       ),
     );
   }
 
   Widget _buildLocationGrid(List<FacultyItem> items) {
+    if (items.isEmpty && _searchQuery.isNotEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search_off, size: 60, color: AppColors.neutral),
+            const SizedBox(height: 16),
+            Text(
+              'No se encontraron resultados para "$_searchQuery"',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: GridView.builder(
