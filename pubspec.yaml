@@ -1,5 +1,5 @@
 name: unprg_guide_maps
-description: "A new Flutter project."
+description: " A guide map application for Universidad Nacional Pedro Ruiz Gallo."
 
 publish_to: 'none' 
 
@@ -19,6 +19,10 @@ dependencies:
   latlong2: ^0.9.1
   google_maps_flutter: ^2.12.1
   mapbox_maps_flutter: ^2.7.0
+  flutter_staggered_animations: ^1.1.1
+  speech_to_text: ^7.0.0
+  shared_preferences: ^2.5.3
+  provider: ^6.1.4
 
 dev_dependencies:
   flutter_test:
