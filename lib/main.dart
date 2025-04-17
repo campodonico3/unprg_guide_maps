@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
       title: 'University Maps',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        fontFamily: 'Nonito',
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
