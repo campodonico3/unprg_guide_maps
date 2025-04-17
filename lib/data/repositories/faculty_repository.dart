@@ -1,3 +1,4 @@
+import 'package:unprg_guide_maps/core/constants/assets_path.dart';
 import 'package:unprg_guide_maps/data/models/faculty_item.dart';
 
 class FacultyRepository {
@@ -19,9 +20,9 @@ class FacultyRepository {
         imageAsset: 'assets/images/facultades/img_ing_ficsa_logo.png',
       ),
       FacultyItem(
-        name: 'Facultad de Derechp y Ciencia Política',
+        name: 'Facultad de Derecho y Ciencia Política',
         sigla: 'FDCP',
-        imageAsset: 'assets/images/facultades/img_ing_ficsa_logo.png',
+        imageAsset: 'assets/images/facultades/img_derecho_logo.png',
       ),
       FacultyItem(
         name: 'Facultad de Ciencias Económicas, Administrativas y Contables',
@@ -51,7 +52,7 @@ class FacultyRepository {
       FacultyItem(
         name: 'Escuela de Posgrado',
         sigla: 'EPG',
-        imageAsset: 'assets/images/facultades/img_sociales_educacion_logo.png',
+        imageAsset: 'assets/images/facultades/img_posgrado_logo.png',
       ),
       FacultyItem(
         name: 'Facultad de Ingeniería Química e Industrias Alimentarias',
@@ -86,42 +87,87 @@ class FacultyRepository {
       FacultyItem(
         name: 'Oficina de Gestión de la Calidad',
         sigla: 'OGC',
-        imageAsset: 'assets/images/unprg_logo.png',
+        imageAsset: AssetsPath.unprgLogo,
       ),
       FacultyItem(
         name: 'Oficina de Cooperación y Relaciones Internacionales',
         sigla: 'OCRI',
-        imageAsset: 'assets/images/unprg_logo.png',
+        imageAsset: AssetsPath.unprgLogo,
       ),
       FacultyItem(
         name: 'Oficina de Comunicación e Imagen Institucional',
         sigla: 'OCII',
-        imageAsset: 'assets/images/unprg_logo.png',
+        imageAsset: AssetsPath.unprgLogo,
       ),
       FacultyItem(
-        name: 'Oficina General de Admisión',
-        sigla: 'OGA',
-        imageAsset: 'assets/images/unprg_logo.png',
+        name: 'Dirección General de Administración',
+        sigla: 'DGA',
+        imageAsset: AssetsPath.unprgLogo,
       ),
       FacultyItem(
-        name: 'Oficina de Bienestar Universitario',
-        sigla: 'OBU',
-        imageAsset: 'assets/images/unprg_logo.png',
+        name: 'Unidad Ejecutora de Inversiones',
+        sigla: 'UEI',
+        imageAsset: AssetsPath.unprgLogo,
       ),
       FacultyItem(
-        name: 'Oficina de Recursos Humanos',
-        sigla: 'ORH',
-        imageAsset: 'assets/images/unprg_logo.png',
+        name: 'Unidad de Recursos Humanos',
+        sigla: 'URH',
+        imageAsset: AssetsPath.unprgLogo,
       ),
       FacultyItem(
         name: 'Oficina de Tecnologías de la Información',
         sigla: 'OTI',
-        imageAsset: 'assets/images/unprg_logo.png',
+        imageAsset: AssetsPath.unprgLogo,
       ),
       FacultyItem(
-        name: 'Oficina de Asuntos Académicos',
-        sigla: 'OAA',
-        imageAsset: 'assets/images/unprg_logo.png',
+        name: 'Unidad de Servicios Generales',
+        sigla: 'USG',
+        imageAsset: AssetsPath.unprgLogo,
+      ),
+      FacultyItem(
+        name: 'Unidad de Abastecimiento',
+        sigla: 'UA',
+        imageAsset: AssetsPath.unprgLogo,
+      ),
+      FacultyItem(
+        name: 'Unidad de Tesorería',
+        sigla: 'UT',
+        imageAsset: AssetsPath.unprgLogo,
+      ),
+      FacultyItem(
+        name: 'Unidad de Contabilidad',
+        sigla: 'UC',
+        imageAsset: AssetsPath.unprgLogo,
+      ),
+      FacultyItem(
+        name: 'Unidad Formuladora',
+        sigla: 'UF',
+        imageAsset: AssetsPath.unprgLogo,
+      ),
+      FacultyItem(
+        name: 'Unidad de Modernización',
+        sigla: 'UM',
+        imageAsset: AssetsPath.unprgLogo,
+      ),
+      FacultyItem(
+        name: 'Unidad de Planeamiento y Presupuesto',
+        sigla: 'UPP',
+        imageAsset: AssetsPath.unprgLogo,
+      ),
+      FacultyItem(
+        name: 'Oficina de Planeamiento y Presupuesto',
+        sigla: 'OPP',
+        imageAsset: AssetsPath.unprgLogo,
+      ),
+      FacultyItem(
+        name: 'Oficina de Asesoria Juridica',
+        sigla: 'OAJ',
+        imageAsset: AssetsPath.unprgLogo,
+      ),
+      FacultyItem(
+        name: 'Organo de Control Institucional',
+        sigla: 'OCI',
+        imageAsset: AssetsPath.unprgLogo,
       ),
     ];
   }
