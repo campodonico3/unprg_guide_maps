@@ -236,6 +236,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             name: item.name,
             sigla: item.sigla,
             imageAsset: item.imageAsset,
+            latitude: item.latitude,
+            longitude: item.longitude,
           );
         },
       ),

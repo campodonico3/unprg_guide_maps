@@ -4,26 +4,45 @@ import 'package:latlong2/latlong.dart';
 import 'package:unprg_guide_maps/core/constants/app_colors.dart';
 
 class FlutterMapPage extends StatefulWidget {
-  const FlutterMapPage({super.key});
+  final String? title;
+  final String? sigla;
+  final double initialLatitude;
+  final double initialLongitude;
+
+  const FlutterMapPage({
+    super.key,
+    this.title,
+    this.sigla,
+    this.initialLatitude = -6.70749760689037,
+    this.initialLongitude = -79.90452516138711,
+  });
 
   @override
   State<FlutterMapPage> createState() => _FlutterMapPageState();
 }
 
 class _FlutterMapPageState extends State<FlutterMapPage> {
-  final LatLng _center = const LatLng(-6.70749760689037, -79.90452516138711); // UNPRG coordinates
+  late final LatLng _center;
   final double _initialZoom = 16.0;
-  
+
   final MapController _mapController = MapController();
 
+  @override
+  void initState() {
+    super.initState();
+    _center = LatLng(
+      widget.initialLatitude,
+      widget.initialLongitude,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primary,
-        title: const Text(
-          'Mapa del Campus',
+        title: Text(
+          widget.title != null ? widget.title! : 'Mapa del Campus',
           style: TextStyle(
             color: AppColors.textOnPrimary,
             fontWeight: FontWeight.bold,
@@ -50,8 +69,11 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
           ),
           MarkerLayer(
             markers: [
+
+              _buildMarker(_center, widget.title ?? "Campus Principal", widget.sigla),
+    
               // Example markers for various university buildings
-              _buildMarker(_center, "Campus Principal"),
+              /*_buildMarker(_center, "Campus Principal"),
               _buildMarker(
                 LatLng(_center.latitude + 0.001, _center.longitude + 0.001),
                 "Facultad de Ingeniería",
@@ -60,7 +82,7 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
                 LatLng(_center.latitude - 0.001, _center.longitude - 0.001),
                 "Biblioteca Central",
               ),
-              // Add more markers as needed
+              // Add more markers as needed*/
             ],
           ),
         ],
@@ -103,7 +125,7 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
     );
   }
 
-  Marker _buildMarker(LatLng position, String title) {
+  Marker _buildMarker(LatLng position, String title, String? sigla) {
     return Marker(
       width: 40.0,
       height: 40.0,
@@ -145,5 +167,4 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       ),
     );
   }
-
 }

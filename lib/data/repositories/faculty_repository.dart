@@ -8,6 +8,8 @@ class FacultyRepository {
         name: 'Facultad de Ingeniería Agrícola',
         sigla: 'FIA',
         imageAsset: 'assets/images/facultades/img_agricola_logo.png',
+        latitude: -6.70749760689037,
+        longitude: -79.90452516138711,
       ),
       FacultyItem(
         name: 'Facultad de Ciencias Biológicas',
