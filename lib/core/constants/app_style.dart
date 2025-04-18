@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:unprg_guide_maps/core/constants/app_colors.dart';
 
 class AppTextStyles {
-  // Privado para evitar instanciación
   AppTextStyles._();
 
   static const TextStyle black = TextStyle(

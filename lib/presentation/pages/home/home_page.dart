@@ -80,6 +80,16 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           return office.name.toLowerCase().contains(_searchQuery) ||
               office.sigla.toLowerCase().contains(_searchQuery);
         }).toList();
+
+        // Si estamos en la pestaña de facultades pero solo hay resultados en oficinas
+        if (_tabController.index == 0 && _filteredFaculties.isEmpty && _filteredOffices.isNotEmpty) {
+          _tabController.animateTo(1); // Cambiar a la pestaña de oficinas
+          
+          // Y si estamos en la pestaña de oficinas pero solo hay resultados en facultades
+        }else if (_tabController.index == 1 && _filteredOffices.isEmpty && _filteredFaculties.isNotEmpty) {
+          _tabController.animateTo(0); // Cambiar a la pestaña de facultades
+        }
+
       }
     });
   }
