@@ -17,9 +17,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget build(BuildContext context) {
     final pages = [
       OnboardingCardData(
-        title: 'BIENVENIDO A\n\'UNIVERSIDAD MAPS\'',
+        title: 'Bienvenido a tu Guía de Universidad',
         subtitle: 'Tu guía en el campus universitario',
-        image: AssetsPath.onboardingImage3,
+        image: AssetsPath.onboardingImage1,
         backgroundColor: AppColors.primary,
         titleColor: Colors.white,
         subtitleColor: Colors.white,
@@ -27,7 +27,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       OnboardingCardData(
         title: 'Aquí encontrarás distintos puntos del campus',
         subtitle: 'Edificios, facultades y áreas comunes',
-        image: AssetsPath.onboardingImage3,
+        image: AssetsPath.onboardingImage2,
         backgroundColor: AppColors.secondary,
         titleColor: Colors.white,
         subtitleColor: Colors.white,
