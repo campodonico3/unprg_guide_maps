@@ -37,6 +37,7 @@ flutter:
     - assets/images/
     - assets/images/facultades/
     - assets/images/unprg_logo.png
+    - assets/images/fondo1.jpeg
 
   fonts:
     - family: Nunito

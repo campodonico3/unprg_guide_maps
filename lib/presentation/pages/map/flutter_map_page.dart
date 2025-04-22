@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:unprg_guide_maps/core/constants/app_colors.dart';
+import 'package:unprg_guide_maps/core/constants/app_style.dart';
 
 class FlutterMapPage extends StatefulWidget {
   final String? title;
@@ -27,6 +28,11 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
 
   final MapController _mapController = MapController();
 
+  // Track if a marker is selected to show the bottom card
+  bool _isMarkerSelected = false;
+  String _selectedTitle = '';
+  String _selectedSigla = '';
+
   @override
   void initState() {
     super.initState();
@@ -34,6 +40,13 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       widget.initialLatitude,
       widget.initialLongitude,
     );
+
+    // Initialize with the widget's title if provided
+    if (widget.title != null) {
+      _selectedTitle = widget.title!;
+      _selectedSigla = widget.sigla ?? '';
+      _isMarkerSelected = true;
+    }
   }
 
   @override
@@ -69,9 +82,9 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
           ),
           MarkerLayer(
             markers: [
+              _buildMarker(
+                  _center, widget.title ?? "Campus Principal", widget.sigla),
 
-              _buildMarker(_center, widget.title ?? "Campus Principal", widget.sigla),
-    
               // Example markers for various university buildings
               /*_buildMarker(_center, "Campus Principal"),
               _buildMarker(
@@ -85,6 +98,15 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
               // Add more markers as needed*/
             ],
           ),
+
+          // Bottom card overlay when a marker is selected
+          if (_isMarkerSelected)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: _buildLocationInfoCard(),
+            ),
         ],
       ),
       floatingActionButton: Column(
@@ -120,6 +142,8 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
               _mapController.move(_center, _initialZoom);
             },
           ),
+          // Add padding when the card is displayed
+          if (_isMarkerSelected) const SizedBox(height: 80),
         ],
       ),
     );
@@ -132,12 +156,18 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       point: position,
       child: GestureDetector(
         onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
+          setState(() {
+            _isMarkerSelected = true;
+            _selectedTitle = title;
+            _selectedSigla = sigla ?? '';
+          });
+
+          /*ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(title),
               duration: const Duration(seconds: 2),
             ),
-          );
+          );*/
         },
         child: Column(
           children: [
@@ -167,4 +197,109 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       ),
     );
   }
+
+  Widget _buildLocationInfoCard() {
+    return Container(
+      height: 100,
+      margin: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Left side - Image
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(15),
+                bottomLeft: Radius.circular(15),
+              ),
+              image: DecorationImage(
+                image: AssetImage('assets/images/facultades/img_ing_ficsa_logo.png'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+
+          // Right side - Information
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Title
+                  Text(
+                    _selectedTitle,
+                    style: AppTextStyles.bold.copyWith(
+                      fontSize: 12,
+                      color: AppColors.primary,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 4),
+                  // Sigla 
+                  Text(
+                    _selectedSigla.isNotEmpty ? 'Código: $_selectedSigla' : 'Campus principal',
+                    style: AppTextStyles.regular.copyWith(
+                      fontSize: 10,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+
+                  // Additional info like address, hours, etc. could be added here
+                  if(_selectedTitle.contains('Facultad'))
+                    Text(
+                      'Edificio académico',
+                      style: AppTextStyles.regular.copyWith(
+                        fontSize: 10,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+
+          // Close button
+            IconButton(
+              icon: const Icon(Icons.close, color: AppColors.textSecondary),
+              onPressed: () {
+                setState(() {
+                  _isMarkerSelected = false;
+                });
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  // Helper method to get appropriate image based on location title
+  String _getImageForLocation(){
+    // Default image
+    String imagePath = 'assets/images/presentacion1.png';
+
+    // For faculties, try to use their specific logo if avaliable based on sigla
+    if(_selectedSigla.isNotEmpty){
+      // Convert to lowercase to be safe with file naming
+      imagePath = 'assets/images/facultades/img_${_selectedSigla.toLowerCase()}_logo.png';
+    }
+    return imagePath;
+  }
 }
+
+
