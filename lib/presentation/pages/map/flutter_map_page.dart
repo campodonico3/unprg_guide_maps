@@ -199,97 +199,118 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
   }
 
   Widget _buildLocationInfoCard() {
-    return Container(
-      height: 100,
-      margin: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 8,
-            offset: Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Left side - Image
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(15),
-                bottomLeft: Radius.circular(15),
-              ),
-              image: DecorationImage(
-                image: AssetImage('assets/images/facultades/img_ing_ficsa_logo.png'),
-                fit: BoxFit.cover,
+    return GestureDetector(
+      // Detectar el gesto de deslizamiento hacia abajo
+      onVerticalDragEnd: (details) {
+        // Si el gesto fue hacia abajo con suficiente velocidad
+        if (details.primaryVelocity != null && details.primaryVelocity! > 300) {
+          setState(() {
+            _isMarkerSelected = false;
+          });
+        }
+      },
+      child: Container(
+        height: 100,
+        margin: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 8,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Indicador visual de arrastre
+            Container(
+              width: 40,
+              height: 4,
+              margin: EdgeInsets.only(top: 6, bottom: 2),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
-          ),
-
-          // Right side - Information
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
+            //Contenido de la tarjeta
+            Expanded(
+              child: Row(
                 children: [
-                  // Title
-                  Text(
-                    _selectedTitle,
-                    style: AppTextStyles.bold.copyWith(
-                      fontSize: 12,
-                      color: AppColors.primary,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 4),
-                  // Sigla 
-                  Text(
-                    _selectedSigla.isNotEmpty ? 'Código: $_selectedSigla' : 'Campus principal',
-                    style: AppTextStyles.regular.copyWith(
-                      fontSize: 10,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-
-                  // Additional info like address, hours, etc. could be added here
-                  if(_selectedTitle.contains('Facultad'))
-                    Text(
-                      'Edificio académico',
-                      style: AppTextStyles.regular.copyWith(
-                        fontSize: 10,
-                        color: AppColors.textSecondary,
+                  // Left side - Image
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(15),
+                        bottomLeft: Radius.circular(15),
+                      ),
+                      image: DecorationImage(
+                        image: AssetImage(
+                            'assets/images/facultades/img_ing_ficsa_logo.png'),
+                        fit: BoxFit.cover,
                       ),
                     ),
+                  ),
+
+                  // Right side - Information
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Title
+                          Text(
+                            _selectedTitle,
+                            style: AppTextStyles.bold.copyWith(
+                              fontSize: 12,
+                              color: AppColors.primary,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          SizedBox(height: 4),
+                          // Sigla
+                          Text(
+                            _selectedSigla.isNotEmpty
+                                ? 'Código: $_selectedSigla'
+                                : 'Campus principal',
+                            style: AppTextStyles.regular.copyWith(
+                              fontSize: 10,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+
+                          // Additional info like address, hours, etc. could be added here
+                          if (_selectedTitle.contains('Facultad'))
+                            Text(
+                              'Edificio académico',
+                              style: AppTextStyles.regular.copyWith(
+                                fontSize: 10,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-          ),
-
-          // Close button
-            IconButton(
-              icon: const Icon(Icons.close, color: AppColors.textSecondary),
-              onPressed: () {
-                setState(() {
-                  _isMarkerSelected = false;
-                });
-              },
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   // Helper method to get appropriate image based on location title
-  String _getImageForLocation(){
+  /*String _getImageForLocation(){
     // Default image
     String imagePath = 'assets/images/presentacion1.png';
 
@@ -299,7 +320,5 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       imagePath = 'assets/images/facultades/img_${_selectedSigla.toLowerCase()}_logo.png';
     }
     return imagePath;
-  }
+  }*/
 }
-
-
