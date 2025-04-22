@@ -24,7 +24,7 @@ class FlutterMapPage extends StatefulWidget {
 
 class _FlutterMapPageState extends State<FlutterMapPage> {
   late final LatLng _center;
-  final double _initialZoom = 16.0;
+  final double _initialZoom = 18.0;
 
   final MapController _mapController = MapController();
 
@@ -55,14 +55,14 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       appBar: AppBar(
         backgroundColor: AppColors.primary,
         title: Text(
-          widget.title != null ? widget.title! : 'Mapa del Campus',
-          style: TextStyle(
+          'Mapa del Campus',
+          style: AppTextStyles.medium.copyWith(
+            fontSize: 21,
             color: AppColors.textOnPrimary,
-            fontWeight: FontWeight.bold,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textOnPrimary),
+          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.textOnPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -112,38 +112,48 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          FloatingActionButton(
-            heroTag: "zoom_in",
-            mini: true,
-            backgroundColor: AppColors.primary,
-            child: const Icon(Icons.add, color: Colors.white),
-            onPressed: () {
-              final newZoom = _mapController.camera.zoom + 1;
-              _mapController.move(_mapController.camera.center, newZoom);
-            },
+          SizedBox(
+            width: 45,
+            height: 45,
+            child: FloatingActionButton(
+              heroTag: "zoom_in",
+              backgroundColor: AppColors.primary,
+              child: const Icon(Icons.add, color: Colors.white),
+              onPressed: () {
+                final newZoom = _mapController.camera.zoom + 1;
+                _mapController.move(_mapController.camera.center, newZoom);
+              },
+            ),
           ),
           const SizedBox(height: 8),
-          FloatingActionButton(
-            heroTag: "zoom_out",
-            mini: true,
-            backgroundColor: AppColors.primary,
-            child: const Icon(Icons.remove, color: Colors.white),
-            onPressed: () {
-              final newZoom = _mapController.camera.zoom - 1;
-              _mapController.move(_mapController.camera.center, newZoom);
-            },
+          SizedBox(
+            width: 45,
+            height: 45,
+            child: FloatingActionButton(
+              heroTag: "zoom_out",
+              backgroundColor: AppColors.primary,
+              child: const Icon(Icons.remove, color: Colors.white),
+              onPressed: () {
+                final newZoom = _mapController.camera.zoom - 1;
+                _mapController.move(_mapController.camera.center, newZoom);
+              },
+            ),
           ),
           const SizedBox(height: 8),
-          FloatingActionButton(
-            heroTag: "my_location",
-            backgroundColor: AppColors.primary,
-            child: const Icon(Icons.my_location, color: Colors.white),
-            onPressed: () {
-              _mapController.move(_center, _initialZoom);
-            },
+          SizedBox(
+            width: 45,
+            height: 45,
+            child: FloatingActionButton(
+              heroTag: "my_location",
+              backgroundColor: AppColors.primary,
+              child: const Icon(Icons.my_location, color: Colors.white),
+              onPressed: () {
+                _mapController.move(_center, _initialZoom);
+              },
+            ),
           ),
           // Add padding when the card is displayed
-          if (_isMarkerSelected) const SizedBox(height: 80),
+          if (_isMarkerSelected) const SizedBox(height: 130),
         ],
       ),
     );
@@ -210,7 +220,7 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
         }
       },
       child: Container(
-        height: 100,
+        height: 120,
         margin: EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.surface,
@@ -227,8 +237,8 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
           children: [
             // Indicador visual de arrastre
             Container(
-              width: 40,
-              height: 4,
+              width: 50,
+              height: 3,
               margin: EdgeInsets.only(top: 6, bottom: 2),
               decoration: BoxDecoration(
                 color: Colors.grey[300],
