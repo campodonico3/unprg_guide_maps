@@ -14,7 +14,8 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final FacultyRepository _facultyRepository = FacultyRepository();
 
@@ -52,8 +53,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   // Método para manejar el cambio de pestaña
-  void _handleTabChange(){
-    if (_tabController.indexIsChanging){
+  void _handleTabChange() {
+    if (_tabController.indexIsChanging) {
       _filterItems(_searchQuery);
     }
   }
@@ -63,12 +64,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     setState(() {
       _searchQuery = query.toLowerCase();
 
-      if (_searchQuery.isEmpty){
+      if (_searchQuery.isEmpty) {
         // Si no hay busqueda, mostrar todos los elementos
         _filteredFaculties = _faculties;
         _filteredOffices = _offices;
-
-      }else{
+      } else {
         // Filtrar facultades
         _filteredFaculties = _faculties.where((faculty) {
           return faculty.name.toLowerCase().contains(_searchQuery) ||
@@ -82,14 +82,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         }).toList();
 
         // Si estamos en la pestaña de facultades pero solo hay resultados en oficinas
-        if (_tabController.index == 0 && _filteredFaculties.isEmpty && _filteredOffices.isNotEmpty) {
+        if (_tabController.index == 0 &&
+            _filteredFaculties.isEmpty &&
+            _filteredOffices.isNotEmpty) {
           _tabController.animateTo(1); // Cambiar a la pestaña de oficinas
-          
+
           // Y si estamos en la pestaña de oficinas pero solo hay resultados en facultades
-        }else if (_tabController.index == 1 && _filteredOffices.isEmpty && _filteredFaculties.isNotEmpty) {
+        } else if (_tabController.index == 1 &&
+            _filteredOffices.isEmpty &&
+            _filteredFaculties.isNotEmpty) {
           _tabController.animateTo(0); // Cambiar a la pestaña de facultades
         }
-
       }
     });
   }
@@ -181,7 +184,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         labelStyle: AppTextStyles.bold.copyWith(fontSize: 14),
         unselectedLabelStyle: AppTextStyles.regular.copyWith(fontSize: 12),
         tabs: const [
-          Tab(text: 'FACULTADES',),
+          Tab(
+            text: 'FACULTADES',
+          ),
           Tab(text: 'OFICINAS'),
         ],
       ),
@@ -249,11 +254,19 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       backgroundColor: AppColors.primary,
       child: const Icon(Icons.map, color: Colors.white),
       onPressed: () {
+        // Combinar facultades y oficinas para pasarlas a FlutterMapPage
+        final List<FacultyItem> allLocations = [
+          ..._faculties.where((faculty) => faculty.latitude != null && faculty.longitude != null),
+          ..._offices.where((office) => office.latitude != null && office.longitude != null),
+        ];
+
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) {
-              return FlutterMapPage();
+              return FlutterMapPage(
+                locations: allLocations,
+              );
             },
           ),
         );

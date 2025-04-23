@@ -3,12 +3,15 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:unprg_guide_maps/core/constants/app_colors.dart';
 import 'package:unprg_guide_maps/core/constants/app_style.dart';
+import 'package:unprg_guide_maps/data/models/faculty_item.dart';
 
 class FlutterMapPage extends StatefulWidget {
   final String? title;
   final String? sigla;
   final double initialLatitude;
   final double initialLongitude;
+  final List<FacultyItem>?
+      locations; // Nueva propiedad para recibir los marcadores
 
   const FlutterMapPage({
     super.key,
@@ -16,6 +19,7 @@ class FlutterMapPage extends StatefulWidget {
     this.sigla,
     this.initialLatitude = -6.70749760689037,
     this.initialLongitude = -79.90452516138711,
+    this.locations, // Lista de ubicaciones a mostrar
   });
 
   @override
@@ -33,6 +37,9 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
   String _selectedTitle = '';
   String _selectedSigla = '';
 
+   // Nuevo: Rastrea la posición del marcador seleccionado
+  LatLng? _selectedMarkerPosition;
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +53,8 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       _selectedTitle = widget.title!;
       _selectedSigla = widget.sigla ?? '';
       _isMarkerSelected = true;
+       // Establecer la posición del marcador seleccionado
+      _selectedMarkerPosition = _center;
     }
   }
 
@@ -62,7 +71,8 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.textOnPrimary),
+          icon: const Icon(Icons.arrow_back_ios_new,
+              color: AppColors.textOnPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -81,22 +91,21 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
             maxZoom: 19,
           ),
           MarkerLayer(
-            markers: [
-              _buildMarker(
-                  _center, widget.sigla ?? "Campus Principal", widget.title),
-
-              // Example markers for various university buildings
-              /*_buildMarker(_center, "Campus Principal"),
-              _buildMarker(
-                LatLng(_center.latitude + 0.001, _center.longitude + 0.001),
-                "Facultad de Ingeniería",
-              ),
-              _buildMarker(
-                LatLng(_center.latitude - 0.001, _center.longitude - 0.001),
-                "Biblioteca Central",
-              ),
-              // Add more markers as needed*/
-            ],
+            markers: widget.locations != null && widget.locations!.isNotEmpty
+                ? widget.locations!.map((location) {
+                    return _buildMarker(
+                      LatLng(location.latitude ?? 0.0, location.longitude ?? 0.0),
+                      location.name,
+                      location.sigla,
+                    );
+                  }).toList()
+                : [
+                    _buildMarker(
+                      _center,
+                      widget.sigla ?? "Campus Principal",
+                      widget.title,
+                    ),
+                  ],
           ),
 
           // Bottom card overlay when a marker is selected
@@ -160,6 +169,20 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
   }
 
   Marker _buildMarker(LatLng position, String title, String? sigla) {
+    // Verificar si la posición es válida
+    if (position.latitude == 0.0 && position.longitude == 0.0) {
+      return const Marker(
+        width: 0,
+        height: 0,
+        point: LatLng(0, 0),
+        child: SizedBox.shrink(),
+      );
+    }
+    // Verifica si este marcador es el seleccionado
+    bool isSelected = _selectedMarkerPosition != null && 
+        _selectedMarkerPosition!.latitude == position.latitude && 
+        _selectedMarkerPosition!.longitude == position.longitude;
+    // Crear el marcador con la posición y el título
     return Marker(
       width: 80.0,
       height: 80.0,
@@ -170,6 +193,8 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
             _isMarkerSelected = true;
             _selectedTitle = title;
             _selectedSigla = sigla ?? '';
+            // Actualizar la posición del marcador seleccionado
+            _selectedMarkerPosition = position;
           });
 
           /*ScaffoldMessenger.of(context).showSnackBar(
@@ -183,7 +208,7 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
           children: [
             Container(
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                color: isSelected ? AppColors.primary : AppColors.neutral,
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
               ),
@@ -195,10 +220,10 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
             ),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+                color: isSelected ? AppColors.primary : AppColors.neutral,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -216,6 +241,8 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
         if (details.primaryVelocity != null && details.primaryVelocity! > 300) {
           setState(() {
             _isMarkerSelected = false;
+            // Limpiar la selección del marcador
+            _selectedMarkerPosition = null;
           });
         }
       },
