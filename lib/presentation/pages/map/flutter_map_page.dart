@@ -83,7 +83,7 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
           MarkerLayer(
             markers: [
               _buildMarker(
-                  _center, widget.title ?? "Campus Principal", widget.sigla),
+                  _center, widget.sigla ?? "Campus Principal", widget.title),
 
               // Example markers for various university buildings
               /*_buildMarker(_center, "Campus Principal"),
@@ -161,8 +161,8 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
 
   Marker _buildMarker(LatLng position, String title, String? sigla) {
     return Marker(
-      width: 40.0,
-      height: 40.0,
+      width: 80.0,
+      height: 80.0,
       point: position,
       child: GestureDetector(
         onTap: () {
