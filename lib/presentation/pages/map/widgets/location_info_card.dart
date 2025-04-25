@@ -88,14 +88,14 @@ class LocationInfoCard extends StatelessWidget {
     return Container(
       width: 80,
       height: 80,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.only(
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(15),
           bottomLeft: Radius.circular(15),
         ),
         image: DecorationImage(
-          image: AssetImage('assets/images/facultades/img_ing_ficsa_logo.png'),
+          image: AssetImage('assets/images/facultades/img_${sigla.toLowerCase()}_logo.png'),
           fit: BoxFit.cover,
         ),
       ),
