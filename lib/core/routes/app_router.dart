@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:unprg_guide_maps/presentation/pages/home/home_page.dart';
-import 'package:unprg_guide_maps/presentation/pages/onboarding/onboarding_page.dart';
-import 'package:unprg_guide_maps/presentation/pages/splash/splash_page.dart';
+import 'package:unprg_guide_maps/presentation/pages/home/pages/home_page.dart';
+import 'package:unprg_guide_maps/presentation/pages/onboarding/pages/onboarding_page.dart';
+import 'package:unprg_guide_maps/presentation/pages/splash/pages/splash_page.dart';
 
 class AppRouter {
   static const String splash = "/";

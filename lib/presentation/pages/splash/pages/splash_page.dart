@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:unprg_guide_maps/core/constants/app_constants.dart';
 import 'package:unprg_guide_maps/core/routes/app_router.dart';
-import 'package:unprg_guide_maps/presentation/pages/splash/widget_splash.dart';
+import 'package:unprg_guide_maps/presentation/pages/splash/widgets/widget_splash.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
