@@ -5,7 +5,7 @@ import "package:unprg_guide_maps/data/models/faculty_item.dart";
 import "package:unprg_guide_maps/data/repositories/faculty_repository.dart";
 import "package:unprg_guide_maps/presentation/pages/home/widgets/faculty_card.dart";
 import "package:unprg_guide_maps/presentation/pages/home/widgets/search_bar_widget.dart";
-import "package:unprg_guide_maps/presentation/pages/map/flutter_map_page.dart";
+import "package:unprg_guide_maps/presentation/pages/map/pages/flutter_map_page.dart";
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

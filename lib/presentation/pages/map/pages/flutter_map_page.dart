@@ -37,8 +37,12 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
   String _selectedTitle = '';
   String _selectedSigla = '';
 
-   // Nuevo: Rastrea la posición del marcador seleccionado
+  // Nuevo: Rastrea la posición del marcador seleccionado
   LatLng? _selectedMarkerPosition;
+
+  bool _isCardExpanded = false;
+  final double _collapsedCardHeight = 120.0;
+  final double _expandedCardHeight = 665.0;
 
   @override
   void initState() {
@@ -53,7 +57,7 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       _selectedTitle = widget.title!;
       _selectedSigla = widget.sigla ?? '';
       _isMarkerSelected = true;
-       // Establecer la posición del marcador seleccionado
+      // Establecer la posición del marcador seleccionado
       _selectedMarkerPosition = _center;
     }
   }
@@ -94,7 +98,8 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
             markers: widget.locations != null && widget.locations!.isNotEmpty
                 ? widget.locations!.map((location) {
                     return _buildMarker(
-                      LatLng(location.latitude ?? 0.0, location.longitude ?? 0.0),
+                      LatLng(
+                          location.latitude ?? 0.0, location.longitude ?? 0.0),
                       location.name,
                       location.sigla,
                     );
@@ -179,8 +184,8 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       );
     }
     // Verifica si este marcador es el seleccionado
-    bool isSelected = _selectedMarkerPosition != null && 
-        _selectedMarkerPosition!.latitude == position.latitude && 
+    bool isSelected = _selectedMarkerPosition != null &&
+        _selectedMarkerPosition!.latitude == position.latitude &&
         _selectedMarkerPosition!.longitude == position.longitude;
     // Crear el marcador con la posición y el título
     return Marker(
@@ -240,14 +245,26 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
         // Si el gesto fue hacia abajo con suficiente velocidad
         if (details.primaryVelocity != null && details.primaryVelocity! > 300) {
           setState(() {
-            _isMarkerSelected = false;
-            // Limpiar la selección del marcador
-            _selectedMarkerPosition = null;
+            if (_isCardExpanded) {
+              // Si está expandida, primero la contraemos
+              _isCardExpanded = false;
+            } else {
+              // Si está contraída, la ocultamos y limpiamos la selección
+              _isMarkerSelected = false;
+              _selectedMarkerPosition = null;
+            }
+          });
+        } else if (details.primaryVelocity != null &&
+            details.primaryVelocity! < -300) {
+          // Si el gesto fue hacia arriba con suficiente velocidad
+          setState(() {
+            _isCardExpanded = true; // Expandir la tarjeta
           });
         }
       },
       child: Container(
-        height: 120,
+        // Altura dinámica según si está expandida o no
+        height: _isCardExpanded ? _expandedCardHeight : _collapsedCardHeight,
         margin: EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.surface,
@@ -294,47 +311,152 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
                     ),
                   ),
 
-                  // Right side - Information
-                  Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.all(12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Title
-                          Text(
-                            _selectedTitle,
-                            style: AppTextStyles.bold.copyWith(
-                              fontSize: 12,
-                              color: AppColors.primary,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          SizedBox(height: 4),
-                          // Sigla
-                          Text(
-                            _selectedSigla.isNotEmpty
-                                ? 'Código: $_selectedSigla'
-                                : 'Campus principal',
-                            style: AppTextStyles.regular.copyWith(
-                              fontSize: 10,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
+                  // Si la tarjeta está contraída, mostramos la vista resumen
+                  if (!_isCardExpanded) _buildCollapsedCardContent(),
 
-                          // Additional info like address, hours, etc. could be added here
-                          if (_selectedTitle.contains('Facultad'))
-                            Text(
-                              'Edificio académico',
-                              style: AppTextStyles.regular.copyWith(
-                                fontSize: 10,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                        ],
+                  // Si la tarjeta está expandida, mostramos el contenido detallado
+                  if (_isCardExpanded) _buildExpandedCardContent(),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Vista contraída
+  Widget _buildCollapsedCardContent() {
+    return Expanded(
+      child: Padding(
+        padding: EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Title
+            Text(
+              _selectedTitle,
+              style: AppTextStyles.bold.copyWith(
+                fontSize: 12,
+                color: AppColors.primary,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            SizedBox(height: 4),
+            // Sigla
+            Text(
+              _selectedSigla.isNotEmpty
+                  ? 'Código: $_selectedSigla'
+                  : 'Campus principal',
+              style: AppTextStyles.regular.copyWith(
+                fontSize: 10,
+                color: AppColors.textSecondary,
+              ),
+            ),
+
+            // Additional info like address, hours, etc. could be added here
+            if (_selectedTitle.contains('Facultad'))
+              Text(
+                'Edificio académico',
+                style: AppTextStyles.regular.copyWith(
+                  fontSize: 10,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Vista expandida (la original)
+  Widget _buildExpandedCardContent() {
+    return Expanded(
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _selectedTitle,
+                    style: AppTextStyles.black.copyWith(
+                      fontSize: 16,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  SizedBox(height: 4,),
+                  Text(
+                    _selectedSigla.isNotEmpty
+                      ? 'Código: $_selectedSigla'
+                      : 'Campus principal',
+                      style: AppTextStyles.regular.copyWith(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
                       ),
+                  ),
+                ],
+              ),
+            ),
+            // Imágenes de la facultad (carrusel horizontal)
+            SizedBox(
+              height: 150,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                children: [
+                  _buildFacultyImage('assets/images/facultades/img_ing_ficsa_logo.png'),
+                  const SizedBox(width: 8),
+                  _buildFacultyImage('assets/images/img_presentacion_1.png'),
+                  const SizedBox(width: 8),
+                  _buildFacultyImage('assets/images/img_presentacion_2.png'),
+                ],
+              ),
+            ),
+            
+            // Información detallada
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
+                  Text(
+                    'Información',
+                    style: AppTextStyles.bold.copyWith(
+                      fontSize: 14,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  
+                  // Información adicional sobre la facultad
+                  _buildInfoRow(Icons.access_time, 'Horario: 7:00 AM - 6:00 PM'),
+                  _buildInfoRow(Icons.phone, 'Teléfono: (074) 481610'),
+                  _buildInfoRow(Icons.mail, 'Email: ${_selectedSigla.toLowerCase()}@unprg.edu.pe'),
+                  
+                  if (_selectedTitle.contains('Facultad'))
+                    _buildInfoRow(Icons.school, 'Tipo: Edificio académico'),
+                    
+                  const SizedBox(height: 16),
+                  Text(
+                    'Descripción',
+                    style: AppTextStyles.bold.copyWith(
+                      fontSize: 14,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Esta es una descripción detallada de ${_selectedTitle}. Aquí puedes incluir información sobre su historia, propósito, servicios ofrecidos, personal, etc.',
+                    style: AppTextStyles.regular.copyWith(
+                      fontSize: 12,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -346,16 +468,54 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
     );
   }
 
-  // Helper method to get appropriate image based on location title
-  /*String _getImageForLocation(){
-    // Default image
-    String imagePath = 'assets/images/presentacion1.png';
+  Widget _buildFacultyImage(String imagePath){
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.asset(
+        imagePath,
+        width: 200,
+        height: 150,
+        fit: BoxFit.cover,
+      ),
+    );
+  }
 
-    // For faculties, try to use their specific logo if avaliable based on sigla
-    if(_selectedSigla.isNotEmpty){
-      // Convert to lowercase to be safe with file naming
-      imagePath = 'assets/images/facultades/img_${_selectedSigla.toLowerCase()}_logo.png';
-    }
-    return imagePath;
-  }*/
+  // Widget para crear filas de información con icono
+  Widget _buildInfoRow(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 16,
+            color: AppColors.primary,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: AppTextStyles.regular.copyWith(
+                fontSize: 12,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+
+// Helper method to get appropriate image based on location title
+  /*String _getImageForLocation(){
+  // Default image
+  String imagePath = 'assets/images/presentacion1.png';
+
+  // For faculties, try to use their specific logo if avaliable based on sigla
+  if(_selectedSigla.isNotEmpty){
+    // Convert to lowercase to be safe with file naming
+    imagePath = 'assets/images/facultades/img_${_selectedSigla.toLowerCase()}_logo.png';
+  }
+  return imagePath;
+  }*/
