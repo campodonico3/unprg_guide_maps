@@ -77,7 +77,7 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       title: Text(
         'Mapa del Campus',
         style: AppTextStyles.medium.copyWith(
-          fontSize: 21,
+          fontSize: 18,
           color: AppColors.textOnPrimary,
         ),
       ),
@@ -136,8 +136,8 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
         : [
             _buildMarker(
               _center,
-              widget.title ?? "Campus Principal",
-              widget.sigla,
+              widget.sigla ?? "Campus Principal",
+              widget.title,
             ),
           ];
 
