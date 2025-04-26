@@ -9,7 +9,7 @@ import 'package:unprg_guide_maps/presentation/pages/map/widgets/location_info_ca
 import 'package:unprg_guide_maps/presentation/pages/map/widgets/location_marker.dart';
 
 class FlutterMapPage extends StatefulWidget {
-  final String? title;
+  final String? name;
   final String? sigla;
   final double initialLatitude;
   final double initialLongitude;
@@ -17,7 +17,7 @@ class FlutterMapPage extends StatefulWidget {
 
   const FlutterMapPage({
     super.key,
-    this.title,
+    this.name,
     this.sigla,
     this.initialLatitude = -6.70749760689037,
     this.initialLongitude = -79.90452516138711,
@@ -54,8 +54,8 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
     );
 
     // Initialize with the widget's title if provided
-    if (widget.title != null) {
-      _selectedTitle = widget.title!;
+    if (widget.name != null) {
+      _selectedTitle = widget.name!;
       _selectedSigla = widget.sigla ?? '';
       _isMarkerSelected = true;
       _selectedMarkerPosition = _center;
@@ -136,15 +136,17 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
         : [
             _buildMarker(
               _center,
+              widget.name ?? "Campus Principal",
               widget.sigla ?? "Campus Principal",
-              widget.title,
+              //widget.sigla ?? "Campus Principal",
+              //widget.name,
             ),
           ];
 
     return MarkerLayer(markers: markers);
   }
 
-  Marker _buildMarker(LatLng position, String title, String? sigla) {
+  Marker _buildMarker(LatLng position, String name, String? sigla) {
     // Skip invalid positions
     if (position.latitude == 0.0 && position.longitude == 0.0) {
       return const Marker(
@@ -158,15 +160,18 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
     final bool isSelected = _selectedMarkerPosition != null &&
         _selectedMarkerPosition!.latitude == position.latitude &&
         _selectedMarkerPosition!.longitude == position.longitude;
-    
+
+    // Determinar el título del marcador siguiendo la prioridad establecida
+    final String markerTitle = sigla ?? name;
+  
     return Marker(
       width: MapConstants.markerWidth,
       height: MapConstants.markerHeight,
       point: position,
       child: GestureDetector(
-        onTap: () => _selectMarker(position, title, sigla ?? ''),
+        onTap: () => _selectMarker(position, name, sigla ?? ''),
         child: LocationMarker(
-          title: title,
+          title: markerTitle,
           isSelected: isSelected,
         ),
       ),

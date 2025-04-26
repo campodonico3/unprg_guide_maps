@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:unprg_guide_maps/core/constants/app_colors.dart';
 import 'package:unprg_guide_maps/core/constants/app_style.dart';
+import 'package:unprg_guide_maps/data/models/faculty_item.dart';
 //import 'package:unprg_guide_maps/presentation/pages/home/widgets/marquee_on_old.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/pages/flutter_map_page.dart';
 
@@ -10,12 +11,14 @@ class FacultyCard extends StatelessWidget {
   final String imageAsset;
   final double? latitude;
   final double? longitude;
+  final List<FacultyItem> allLocations; // Nuevo parámetro
 
   const FacultyCard({
     super.key,
     required this.name,
     required this.sigla,
     required this.imageAsset,
+    required this.allLocations,
     this.latitude,
     this.longitude,
   });
@@ -30,7 +33,8 @@ class FacultyCard extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) => FlutterMapPage(
-                title: name,
+                locations: allLocations,
+                name: name,
                 sigla: sigla,
                 initialLatitude: latitude ?? -6.70749760689037,
                 initialLongitude: longitude ?? -79.90452516138711,

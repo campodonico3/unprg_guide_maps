@@ -241,6 +241,7 @@ class _HomePageState extends State<HomePage>
             name: item.name,
             sigla: item.sigla,
             imageAsset: item.imageAsset,
+            allLocations: [..._faculties, ..._offices],
             latitude: item.latitude,
             longitude: item.longitude,
           );
