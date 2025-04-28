@@ -23,6 +23,7 @@ dependencies:
   speech_to_text: ^7.0.0
   shared_preferences: ^2.5.3
   provider: ^6.1.4
+  location: ^8.0.0
 
 dev_dependencies:
   flutter_test:

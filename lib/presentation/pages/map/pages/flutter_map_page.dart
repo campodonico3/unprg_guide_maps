@@ -7,6 +7,7 @@ import 'package:unprg_guide_maps/core/constants/map_constants.dart';
 import 'package:unprg_guide_maps/data/models/faculty_item.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/widgets/location_info_card.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/widgets/location_marker.dart';
+import 'package:location/location.dart';
 
 class FlutterMapPage extends StatefulWidget {
   final String? name;
@@ -41,6 +42,13 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
   // Card state
   bool _isCardExpanded = false;
 
+  // Location service
+  final Location _locationService = Location();
+  bool _serviceEnabled = false;
+  PermissionStatus _permissionGranted = PermissionStatus.denied;
+  LocationData? _currentLocation;
+  bool _isGettingLocation = false;
+
   @override
   void initState() {
     super.initState();
@@ -59,6 +67,80 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       _selectedSigla = widget.sigla ?? '';
       _isMarkerSelected = true;
       _selectedMarkerPosition = _center;
+    }
+  }
+
+  Future<void> _checkLocationPermissions() async {
+    _serviceEnabled = await _locationService.serviceEnabled();
+    if (!_serviceEnabled) {
+      _serviceEnabled = await _locationService.requestService();
+      if (!_serviceEnabled) {
+        return;
+      }
+    }
+
+    _permissionGranted = await _locationService.hasPermission();
+    if (_permissionGranted == PermissionStatus.denied) {
+      _permissionGranted = await _locationService.requestPermission();
+      if (_permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+  }
+
+  Future<void> _getCurrentLocation() async {
+    setState(() {
+      _isGettingLocation = true;
+    });
+    
+    try {
+      await _checkLocationPermissions();
+      
+      if (_serviceEnabled && _permissionGranted == PermissionStatus.granted) {
+        _currentLocation = await _locationService.getLocation();
+        
+        if (_currentLocation != null) {
+          final userLocation = LatLng(
+            _currentLocation!.latitude!,
+            _currentLocation!.longitude!,
+          );
+          
+          _mapController.move(userLocation, MapConstants.initialZoom + 2);
+          
+          // Optional: Show a marker at user's location
+          setState(() {
+            _isMarkerSelected = true;
+            _selectedTitle = "Mi ubicación";
+            _selectedSigla = "";
+            _selectedMarkerPosition = userLocation;
+          });
+        }
+      } else {
+        // Show alert that location permissions are required
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Se requieren permisos de ubicación para esta función'),
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al obtener la ubicación: $e'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGettingLocation = false;
+        });
+      }
     }
   }
 
@@ -100,6 +182,23 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       children: [
         _buildTileLayer(),
         _buildMarkerLayer(),
+        if (_currentLocation != null)
+          MarkerLayer(
+            markers: [
+              Marker(
+                point: LatLng(_currentLocation!.latitude!, _currentLocation!.longitude!),
+                width: 20,
+                height: 20,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.7),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                ),
+              )
+            ],
+          ),
         if (_isMarkerSelected)
           Positioned(
             bottom: 0,
@@ -221,8 +320,17 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
         const SizedBox(height: 8),
         _buildFloatingButton(
           heroTag: "my_location",
-          icon: const Icon(Icons.my_location, color: Colors.white),
-          onPressed: () => _resetMapView(),
+          icon: _isGettingLocation 
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
+              : const Icon(Icons.my_location, color: Colors.white),
+          onPressed: () => _getCurrentLocation(),
         ),
         // Add padding when the card is displayed
         if (_isMarkerSelected) const SizedBox(height: 130),
@@ -256,8 +364,5 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
     final newZoom = _mapController.camera.zoom - 1;
     _mapController.move(_mapController.camera.center, newZoom);
   }
-
-  void _resetMapView() {
-    _mapController.move(_center, MapConstants.initialZoom);
-  }
+  
 }
