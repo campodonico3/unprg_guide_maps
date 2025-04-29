@@ -189,7 +189,7 @@ class LocationInfoCard extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         children: const [
-          FacultyImage(imagePath: 'assets/images/facultades/img_ing_ficsa_logo.png'),
+          FacultyImage(imagePath: 'assets/images/facultades/img_ficsa_logo.png'),
           SizedBox(width: 8),
           FacultyImage(imagePath: 'assets/images/img_presentacion_1.png'),
           SizedBox(width: 8),

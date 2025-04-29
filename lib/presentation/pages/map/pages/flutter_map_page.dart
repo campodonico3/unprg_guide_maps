@@ -303,6 +303,13 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
   }
 
   Widget _buildFloatingActionButtons() {
+    // Si la tarjeta está expandida, no mostramos ningún botón flotante
+    if (_isCardExpanded) {
+      return SizedBox(
+        height: _isMarkerSelected ? 130 : 0, // Mantenemos el espaciado para la tarjeta
+      );
+    }
+    
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
