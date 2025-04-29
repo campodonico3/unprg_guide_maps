@@ -209,6 +209,7 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
               title: _selectedTitle,
               sigla: _selectedSigla,
               onCardStateChanged: _handleCardStateChanged,
+              showNavigateButton: true,
             ),
           ),
       ],

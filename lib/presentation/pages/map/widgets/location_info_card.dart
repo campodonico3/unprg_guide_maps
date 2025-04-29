@@ -10,6 +10,8 @@ class LocationInfoCard extends StatelessWidget {
   final String title;
   final String sigla;
   final Function(bool) onCardStateChanged;
+  final VoidCallback? onNavigatePressed;
+  final bool showNavigateButton;
 
   const LocationInfoCard({
     super.key,
@@ -17,6 +19,8 @@ class LocationInfoCard extends StatelessWidget {
     required this.title,
     required this.sigla,
     required this.onCardStateChanged,
+    this.onNavigatePressed,
+    this.showNavigateButton = false,
   });
 
   @override
@@ -25,8 +29,8 @@ class LocationInfoCard extends StatelessWidget {
       onVerticalDragEnd: (details) => _handleDragGesture(details),
       child: AnimatedContainer(
         duration: MapConstants.animationDuration,
-        height: isExpanded 
-            ? MapConstants.expandedCardHeight 
+        height: isExpanded
+            ? MapConstants.expandedCardHeight
             : MapConstants.collapsedCardHeight,
         margin: MapConstants.defaultPadding,
         decoration: BoxDecoration(
@@ -47,10 +51,8 @@ class LocationInfoCard extends StatelessWidget {
               child: Row(
                 children: [
                   _buildLocationImage(),
-                  if (!isExpanded) 
-                    _buildCollapsedContent(),
-                  if (isExpanded) 
-                    _buildExpandedContent(),
+                  if (!isExpanded) _buildCollapsedContent(),
+                  if (isExpanded) _buildExpandedContent(),
                 ],
               ),
             ),
@@ -62,7 +64,7 @@ class LocationInfoCard extends StatelessWidget {
 
   void _handleDragGesture(DragEndDetails details) {
     if (details.primaryVelocity == null) return;
-    
+
     if (details.primaryVelocity! > MapConstants.dragThreshold) {
       // Swipe down - collapse or dismiss
       onCardStateChanged(false);
@@ -95,7 +97,8 @@ class LocationInfoCard extends StatelessWidget {
           bottomLeft: Radius.circular(15),
         ),
         image: DecorationImage(
-          image: AssetImage('assets/images/facultades/img_${sigla.toLowerCase()}_logo.png'),
+          image: AssetImage(
+              'assets/images/facultades/img_${sigla.toLowerCase()}_logo.png'),
           fit: BoxFit.cover,
         ),
       ),
@@ -120,24 +123,51 @@ class LocationInfoCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
-            Text(
+            /*Text(
               sigla.isNotEmpty ? 'Código: $sigla' : 'Campus principal',
               style: AppTextStyles.regular.copyWith(
                 fontSize: 10,
                 color: AppColors.textSecondary,
               ),
-            ),
-            if (title.contains('Facultad'))
+            ),*/
+            /*if (title.contains('Facultad'))
               Text(
                 'Edificio académico',
                 style: AppTextStyles.regular.copyWith(
                   fontSize: 10,
                   color: AppColors.textSecondary,
                 ),
-              ),
+              ),*/
+            if (showNavigateButton) ...[
+              const SizedBox(height: 8),
+              _buildNavigateButton(),
+            ],
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildNavigateButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 28,
+      child: ElevatedButton.icon(
+          onPressed: onNavigatePressed,
+          icon: const Icon(
+            Icons.directions,
+            size: 16,
+          ),
+          label: const Text('Ir'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.orange,
+            foregroundColor: Colors.white,
+            textStyle: AppTextStyles.medium.copyWith(fontSize: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          )),
     );
   }
 
@@ -150,6 +180,12 @@ class LocationInfoCard extends StatelessWidget {
             _buildExpandedHeader(),
             _buildImageGallery(),
             _buildDetailedInfo(),
+            if (showNavigateButton) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                child: _buildNavigateButton(),
+              ),
+            ],
           ],
         ),
       ),
@@ -189,7 +225,8 @@ class LocationInfoCard extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         children: const [
-          FacultyImage(imagePath: 'assets/images/facultades/img_ficsa_logo.png'),
+          FacultyImage(
+              imagePath: 'assets/images/facultades/img_ficsa_logo.png'),
           SizedBox(width: 8),
           FacultyImage(imagePath: 'assets/images/img_presentacion_1.png'),
           SizedBox(width: 8),
@@ -214,14 +251,13 @@ class LocationInfoCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          
           InfoRow(icon: Icons.access_time, text: 'Horario: 7:00 AM - 6:00 PM'),
           InfoRow(icon: Icons.phone, text: 'Teléfono: (074) 481610'),
-          InfoRow(icon: Icons.mail, text: 'Email: ${sigla.toLowerCase()}@unprg.edu.pe'),
-          
+          InfoRow(
+              icon: Icons.mail,
+              text: 'Email: ${sigla.toLowerCase()}@unprg.edu.pe'),
           if (title.contains('Facultad'))
             const InfoRow(icon: Icons.school, text: 'Tipo: Edificio académico'),
-            
           const SizedBox(height: 16),
           Text(
             'Descripción',
