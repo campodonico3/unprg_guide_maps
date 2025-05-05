@@ -140,7 +140,7 @@ class LocationInfoCard extends StatelessWidget {
               ),*/
             if (showNavigateButton) ...[
               const SizedBox(height: 8),
-              _buildNavigateButton(),
+              _buildNavigateButton(),            
             ],
           ],
         ),
@@ -151,21 +151,25 @@ class LocationInfoCard extends StatelessWidget {
   Widget _buildNavigateButton() {
     return SizedBox(
       width: double.infinity,
-      height: 28,
+      height: 32,
       child: ElevatedButton.icon(
-          onPressed: onNavigatePressed,
+          onPressed: onNavigatePressed ?? () {},
           icon: const Icon(
             Icons.directions,
             size: 16,
+            color: Colors.white,
           ),
-          label: const Text('Ir'),
+          label: const Text('Ir', style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.orange,
-            foregroundColor: Colors.white,
-            textStyle: AppTextStyles.medium.copyWith(fontSize: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            backgroundColor: Colors.deepOrangeAccent,
+            elevation: 4,
+            padding: const EdgeInsets.symmetric(vertical: 4),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(20),
             ),
           )),
     );
