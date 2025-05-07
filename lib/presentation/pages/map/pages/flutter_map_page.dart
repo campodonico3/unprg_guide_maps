@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:unprg_guide_maps/core/constants/app_colors.dart';
 import 'package:unprg_guide_maps/core/constants/app_style.dart';
 import 'package:unprg_guide_maps/core/constants/map_constants.dart';
 import 'package:unprg_guide_maps/data/models/faculty_item.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/widgets/location_info_card.dart';
-import 'package:unprg_guide_maps/presentation/pages/map/widgets/location_marker.dart';
-import 'package:location/location.dart';
+// Importamos nuestros nuevos widgets y servicios
+import 'package:unprg_guide_maps/presentation/pages/map/widgets/map_floating_buttons.dart';
+import 'package:unprg_guide_maps/presentation/pages/map/widgets/custom_map_view.dart';
+import 'package:unprg_guide_maps/core/services/location_service.dart';
+import 'package:unprg_guide_maps/core/services/marker_service.dart';
+
 
 class FlutterMapPage extends StatefulWidget {
   final String? name;
@@ -31,7 +34,11 @@ class FlutterMapPage extends StatefulWidget {
 
 class _FlutterMapPageState extends State<FlutterMapPage> {
   late final LatLng _center;
-  final MapController _mapController = MapController();
+  final LocationService _locationService = LocationService();
+  final MarkerService _markerService = MarkerService();
+  
+  GoogleMapController? _mapController;
+  bool _isGettingLocation = false;
   
   // Selected marker state
   bool _isMarkerSelected = false;
@@ -41,90 +48,182 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
   
   // Card state
   bool _isCardExpanded = false;
-
-  // Location service
-  final Location _locationService = Location();
-  bool _serviceEnabled = false;
-  PermissionStatus _permissionGranted = PermissionStatus.denied;
-  LocationData? _currentLocation;
-  bool _isGettingLocation = false;
-
+  
+  // Markers collection
+  Set<Marker> _markers = {};
+  bool _markersReady = false;
+  
   @override
   void initState() {
     super.initState();
-    _initializeMapState();
+    _initMapState();
   }
-
-  void _initializeMapState() {
+  
+  Future<void> _initMapState() async {
     _center = LatLng(
       widget.initialLatitude,
       widget.initialLongitude,
     );
-
-    // Initialize with the widget's title if provided
+    
+    // Initialize marker icons
+    await _markerService.initialize();
+    
+    // Initial selection if provided
     if (widget.name != null) {
       _selectedTitle = widget.name!;
       _selectedSigla = widget.sigla ?? '';
       _isMarkerSelected = true;
       _selectedMarkerPosition = _center;
     }
+    
+    // Setup markers
+    await _setupMarkers();
+    
+    setState(() {
+      _markersReady = true;
+    });
   }
-
-  Future<void> _checkLocationPermissions() async {
-    _serviceEnabled = await _locationService.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await _locationService.requestService();
-      if (!_serviceEnabled) {
-        return;
+  
+  Future<void> _setupMarkers() async {
+    Set<Marker> markers = {};
+    
+    if (widget.locations != null && widget.locations!.isNotEmpty) {
+      for (var location in widget.locations!) {
+        if (location.latitude != null && 
+            location.longitude != null && 
+            (location.latitude != 0.0 || location.longitude != 0.0)) {
+          
+          final isSelected = location.name == _selectedTitle;
+          final marker = await _markerService.createLocationMarker(
+            location.name,
+            LatLng(location.latitude!, location.longitude!),
+            location.sigla ?? '',
+            isSelected,
+            onTap: () => _selectMarker(
+              LatLng(location.latitude!, location.longitude!),
+              location.name,
+              location.sigla ?? '',
+            ),
+          );
+          
+          markers.add(marker);
+        }
       }
+    } else {
+      // Add default marker for the center point
+      final marker = await _markerService.createLocationMarker(
+        widget.name ?? "Campus Principal",
+        _center,
+        widget.sigla ?? '',
+        _isMarkerSelected,
+        onTap: () => _selectMarker(
+          _center,
+          widget.name ?? "Campus Principal",
+          widget.sigla ?? '',
+        ),
+      );
+      
+      markers.add(marker);
     }
-
-    _permissionGranted = await _locationService.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await _locationService.requestPermission();
-      if (_permissionGranted != PermissionStatus.granted) {
-        return;
-      }
-    }
+    
+    setState(() {
+      _markers = markers;
+    });
   }
-
+  
+  Future<void> _updateMarkerSelection() async {
+    final updatedMarkers = await _markerService.updateMarkerSelections(
+      _markers, 
+      _selectedTitle,
+      widget.name ?? "Campus Principal"
+    );
+    
+    setState(() {
+      _markers = updatedMarkers;
+    });
+  }
+  
+  void _selectMarker(LatLng position, String title, String sigla) {
+    setState(() {
+      _isMarkerSelected = true;
+      _selectedTitle = title;
+      _selectedSigla = sigla;
+      _selectedMarkerPosition = position;
+    });
+    
+    // Update marker appearances
+    _updateMarkerSelection();
+    
+    // Center the map on the selected marker
+    _mapController?.animateCamera(
+      CameraUpdate.newLatLng(position),
+    );
+  }
+  
+  void _handleCardStateChanged(bool isExpanded) {
+    setState(() {
+      if (!isExpanded && _isCardExpanded) {
+        // Collapse card
+        _isCardExpanded = false;
+      } else if (!isExpanded && !_isCardExpanded) {
+        // Hide card
+        _isMarkerSelected = false;
+        _selectedMarkerPosition = null;
+        _updateMarkerSelection();
+      } else {
+        // Expand card
+        _isCardExpanded = true;
+      }
+    });
+  }
+  
   Future<void> _getCurrentLocation() async {
+    if (_isGettingLocation) return;
+    
     setState(() {
       _isGettingLocation = true;
     });
     
     try {
-      await _checkLocationPermissions();
+      final locationResult = await _locationService.getCurrentLocation(context);
       
-      if (_serviceEnabled && _permissionGranted == PermissionStatus.granted) {
-        _currentLocation = await _locationService.getLocation();
+      if (locationResult != null && _mapController != null) {
+        final userLocation = locationResult.position;
         
-        if (_currentLocation != null) {
-          final userLocation = LatLng(
-            _currentLocation!.latitude!,
-            _currentLocation!.longitude!,
-          );
-          
-          _mapController.move(userLocation, MapConstants.initialZoom + 2);
-          
-          // Optional: Show a marker at user's location
-          setState(() {
-            _isMarkerSelected = true;
-            _selectedTitle = "Mi ubicación";
-            _selectedSigla = "";
-            _selectedMarkerPosition = userLocation;
-          });
-        }
-      } else {
-        // Show alert that location permissions are required
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Se requieren permisos de ubicación para esta función'),
-              duration: Duration(seconds: 3),
+        // Animate to user location
+        _mapController!.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: userLocation,
+              zoom: MapConstants.initialZoom + 2,
             ),
-          );
-        }
+          ),
+        );
+        
+        // Create user location marker
+        final userMarker = await _markerService.createUserLocationMarker(
+          userLocation,
+          onTap: () => _selectMarker(
+            userLocation,
+            "Mi ubicación",
+            "",
+          ),
+        );
+        
+        // Update markers
+        setState(() {
+          // Remove old user location marker if exists
+          _markers.removeWhere((marker) => marker.markerId.value == "my_location");
+          _markers.add(userMarker);
+          
+          _isMarkerSelected = true;
+          _selectedTitle = "Mi ubicación";
+          _selectedSigla = "";
+          _selectedMarkerPosition = userLocation;
+        });
+        
+        // Update marker selections
+        _updateMarkerSelection();
       }
     } catch (e) {
       if (mounted) {
@@ -143,13 +242,63 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       }
     }
   }
+  
+  void _handleMapCreated(GoogleMapController controller) {
+    _mapController = controller;
+    _markerService.setMapStyle(controller);
+  }
+  
+  void _zoomIn() {
+    _mapController?.animateCamera(CameraUpdate.zoomIn());
+  }
+  
+  void _zoomOut() {
+    _mapController?.animateCamera(CameraUpdate.zoomOut());
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (!_markersReady) {
+      return Scaffold(
+        appBar: _buildAppBar(),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
     return Scaffold(
       appBar: _buildAppBar(),
-      body: _buildMap(),
-      floatingActionButton: _buildFloatingActionButtons(),
+      body: Stack(
+        children: [
+          CustomMapView(
+            center: _center, 
+            markers: _markers,
+            onMapCreated: _handleMapCreated,
+          ),
+          if (_isMarkerSelected)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: LocationInfoCard(
+                isExpanded: _isCardExpanded,
+                title: _selectedTitle,
+                sigla: _selectedSigla,
+                onCardStateChanged: _handleCardStateChanged,
+                showNavigateButton: true,
+              ),
+            ),
+        ],
+      ),
+      floatingActionButton: MapFloatingButtons(
+        isCardExpanded: _isCardExpanded,
+        isMarkerSelected: _isMarkerSelected,
+        isGettingLocation: _isGettingLocation,
+        onZoomIn: _zoomIn,
+        onZoomOut: _zoomOut,
+        onGetLocation: _getCurrentLocation,
+      ),
     );
   }
 
@@ -169,208 +318,4 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       ),
     );
   }
-
-  Widget _buildMap() {
-    return FlutterMap(
-      mapController: _mapController,
-      options: MapOptions(
-        initialCenter: _center,
-        initialZoom: MapConstants.initialZoom,
-        maxZoom: MapConstants.maxZoom,
-        minZoom: MapConstants.minZoom,
-      ),
-      children: [
-        _buildTileLayer(),
-        _buildMarkerLayer(),
-        if (_currentLocation != null)
-          MarkerLayer(
-            markers: [
-              Marker(
-                point: LatLng(_currentLocation!.latitude!, _currentLocation!.longitude!),
-                width: 20,
-                height: 20,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.7),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                ),
-              )
-            ],
-          ),
-        if (_isMarkerSelected)
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: LocationInfoCard(
-              isExpanded: _isCardExpanded,
-              title: _selectedTitle,
-              sigla: _selectedSigla,
-              onCardStateChanged: _handleCardStateChanged,
-              showNavigateButton: true,
-            ),
-          ),
-      ],
-    );
-  }
-
-  TileLayer _buildTileLayer() {
-    return TileLayer(
-      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-      userAgentPackageName: 'com.example.unprg_guide_maps',
-      maxZoom: MapConstants.maxZoom,
-    );
-  }
-
-  MarkerLayer _buildMarkerLayer() {
-    final List<Marker> markers = widget.locations != null && widget.locations!.isNotEmpty
-        ? widget.locations!.map((location) {
-            return _buildMarker(
-              LatLng(location.latitude ?? 0.0, location.longitude ?? 0.0),
-              location.name,
-              location.sigla,
-            );
-          }).toList()
-        : [
-            _buildMarker(
-              _center,
-              widget.name ?? "Campus Principal",
-              widget.sigla ?? "Campus Principal",
-              //widget.sigla ?? "Campus Principal",
-              //widget.name,
-            ),
-          ];
-
-    return MarkerLayer(markers: markers);
-  }
-
-  Marker _buildMarker(LatLng position, String name, String? sigla) {
-    // Skip invalid positions
-    if (position.latitude == 0.0 && position.longitude == 0.0) {
-      return const Marker(
-        width: 0,
-        height: 0,
-        point: LatLng(0, 0),
-        child: SizedBox.shrink(),
-      );
-    }
-    
-    final bool isSelected = _selectedMarkerPosition != null &&
-        _selectedMarkerPosition!.latitude == position.latitude &&
-        _selectedMarkerPosition!.longitude == position.longitude;
-
-    // Determinar el título del marcador siguiendo la prioridad establecida
-    final String markerTitle = sigla ?? name;
-  
-    return Marker(
-      width: MapConstants.markerWidth,
-      height: MapConstants.markerHeight,
-      point: position,
-      child: GestureDetector(
-        onTap: () => _selectMarker(position, name, sigla ?? ''),
-        child: LocationMarker(
-          title: markerTitle,
-          isSelected: isSelected,
-        ),
-      ),
-    );
-  }
-
-  void _selectMarker(LatLng position, String title, String sigla) {
-    setState(() {
-      _isMarkerSelected = true;
-      _selectedTitle = title;
-      _selectedSigla = sigla;
-      _selectedMarkerPosition = position;
-    });
-  }
-
-  void _handleCardStateChanged(bool isExpanded) {
-    setState(() {
-      if (!isExpanded && _isCardExpanded) {
-        // Collapse card
-        _isCardExpanded = false;
-      } else if (!isExpanded && !_isCardExpanded) {
-        // Hide card
-        _isMarkerSelected = false;
-        _selectedMarkerPosition = null;
-      } else {
-        // Expand card
-        _isCardExpanded = true;
-      }
-    });
-  }
-
-  Widget _buildFloatingActionButtons() {
-    // Si la tarjeta está expandida, no mostramos ningún botón flotante
-    if (_isCardExpanded) {
-      return SizedBox(
-        height: _isMarkerSelected ? 130 : 0, // Mantenemos el espaciado para la tarjeta
-      );
-    }
-    
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        _buildFloatingButton(
-          heroTag: "zoom_in",
-          icon: const Icon(Icons.add, color: Colors.white),
-          onPressed: () => _zoomIn(),
-        ),
-        const SizedBox(height: 8),
-        _buildFloatingButton(
-          heroTag: "zoom_out",
-          icon: const Icon(Icons.remove, color: Colors.white),
-          onPressed: () => _zoomOut(),
-        ),
-        const SizedBox(height: 8),
-        _buildFloatingButton(
-          heroTag: "my_location",
-          icon: _isGettingLocation 
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  ),
-                )
-              : const Icon(Icons.my_location, color: Colors.white),
-          onPressed: () => _getCurrentLocation(),
-        ),
-        // Add padding when the card is displayed
-        if (_isMarkerSelected) const SizedBox(height: 130),
-      ],
-    );
-  }
-
-  Widget _buildFloatingButton({
-    required String heroTag,
-    required Widget icon,
-    required VoidCallback onPressed,
-  }) {
-    return SizedBox(
-      width: 45,
-      height: 45,
-      child: FloatingActionButton(
-        heroTag: heroTag,
-        backgroundColor: AppColors.primary,
-        onPressed: onPressed,
-        child: icon,
-      ),
-    );
-  }
-
-  void _zoomIn() {
-    final newZoom = _mapController.camera.zoom + 1;
-    _mapController.move(_mapController.camera.center, newZoom);
-  }
-
-  void _zoomOut() {
-    final newZoom = _mapController.camera.zoom - 1;
-    _mapController.move(_mapController.camera.center, newZoom);
-  }
-  
 }
