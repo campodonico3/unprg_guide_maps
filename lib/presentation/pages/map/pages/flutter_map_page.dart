@@ -97,12 +97,12 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
           final marker = await _markerService.createLocationMarker(
             location.name,
             LatLng(location.latitude!, location.longitude!),
-            location.sigla ?? '',
+            location.sigla,
             isSelected,
             onTap: () => _selectMarker(
               LatLng(location.latitude!, location.longitude!),
               location.name,
-              location.sigla ?? '',
+              location.sigla,
             ),
           );
           
