@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+/*import 'package:flutter/material.dart';
 
 class FacultyImage extends StatelessWidget {
   final String imagePath;
@@ -20,4 +20,4 @@ class FacultyImage extends StatelessWidget {
       ),
     );
   }
-}
+}*/

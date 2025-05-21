@@ -5,7 +5,7 @@ import "package:unprg_guide_maps/data/models/faculty_item.dart";
 import "package:unprg_guide_maps/data/repositories/faculty_repository.dart";
 import "package:unprg_guide_maps/presentation/pages/home/widgets/faculty_card.dart";
 import "package:unprg_guide_maps/presentation/pages/home/widgets/search_bar_widget.dart";
-import "package:unprg_guide_maps/presentation/pages/map/pages/flutter_map_page.dart";
+//import "package:unprg_guide_maps/presentation/pages/map/pages/flutter_map_page.dart";
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -92,6 +92,8 @@ class _HomePageState extends State<HomePage>
             _filteredOffices.isEmpty &&
             _filteredFaculties.isNotEmpty) {
           _tabController.animateTo(0); // Cambiar a la pestaña de facultades
+        } else {
+          // Si hay resultados en ambas pestañas, no hacer nada
         }
       }
     });
@@ -256,12 +258,12 @@ class _HomePageState extends State<HomePage>
       child: const Icon(Icons.map, color: Colors.white),
       onPressed: () {
         // Combinar facultades y oficinas para pasarlas a FlutterMapPage
-        final List<FacultyItem> allLocations = [
-          ..._faculties.where((faculty) => faculty.latitude != null && faculty.longitude != null),
-          ..._offices.where((office) => office.latitude != null && office.longitude != null),
-        ];
+        // final List<FacultyItem> allLocations = [
+        //   ..._faculties.where((faculty) => faculty.latitude != null && faculty.longitude != null),
+        //   ..._offices.where((office) => office.latitude != null && office.longitude != null),
+        // ];
 
-        Navigator.push(
+        /* Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) {
@@ -270,7 +272,7 @@ class _HomePageState extends State<HomePage>
               );
             },
           ),
-        );
+        ); */
       },
     );
   }
