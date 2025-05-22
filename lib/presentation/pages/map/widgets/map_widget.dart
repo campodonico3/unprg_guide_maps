@@ -36,7 +36,34 @@ class MapWidget extends StatelessWidget {
   }
 
   Set<Marker> _buildMarkers() {
-    final markers = <Marker>{
+    final destinationMarkerId = MarkerId(sigla ?? 'destination_marker');
+
+    // Marcador de destino con callback onTap
+    final destinationMarker = Marker(
+      markerId: destinationMarkerId,
+      position: LatLng(initialLatitude, initialLongitude),
+      infoWindow: InfoWindow(
+        title: sigla,
+        snippet: name,
+      ),
+      onTap: () {
+        mapController.onMarkerTapped(destinationMarkerId);
+      },
+    );
+
+    final markers = <Marker>{destinationMarker};  
+
+    // Si hay marcador de usuario, le agregamos también onTap si queremos:
+    if(mapController.userMarker != null) {
+      final userM = mapController.userMarker!;
+      markers.add(userM.copyWith(
+        onTapParam: () {
+          mapController.onMarkerTapped(userM.markerId);
+        },
+      ));
+    }
+
+    /* final markers = <Marker>{
       Marker(
         markerId: MarkerId(sigla ?? 'location_marker'),
         position: LatLng(initialLatitude, initialLongitude),
@@ -49,7 +76,7 @@ class MapWidget extends StatelessWidget {
 
     if (mapController.userMarker != null) {
       markers.add(mapController.userMarker!);
-    }
+    } */
 
     return markers;
   }

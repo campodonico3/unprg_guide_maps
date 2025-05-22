@@ -5,9 +5,23 @@ import 'package:location/location.dart';
 import 'package:unprg_guide_maps/core/services/location_service.dart';
 import 'package:unprg_guide_maps/core/services/polyline_service.dart';
 
+const _noPoiTransitStyle = '''[
+  {
+    "featureType": "poi",
+    "stylers": [{ "visibility": "off" }]
+  },
+  {
+    "featureType": "transit",
+    "stylers": [{ "visibility": "off" }]
+  }
+]''';
+
 class MapController extends ChangeNotifier {
   final double initialLatitude;
   final double initialLongitude;
+  final String? name;
+  final String? sigla;
+  bool _showInfoCard = false;
   
   GoogleMapController? _googleMapController;
   final LocationService _locationService = LocationService();
@@ -16,10 +30,12 @@ class MapController extends ChangeNotifier {
   StreamSubscription<LocationData>? _locationSubscription;
   Marker? _userMarker;
   Set<Polyline> _polylines = {};
+
   
   // Getters
   Marker? get userMarker => _userMarker;
   Set<Polyline> get polylines => _polylines;
+  bool get showInfoCard => _showInfoCard;
   CameraPosition get initialPosition => CameraPosition(
     target: LatLng(initialLatitude, initialLongitude),
     zoom: 16,
@@ -28,6 +44,8 @@ class MapController extends ChangeNotifier {
   MapController({
     required this.initialLatitude,
     required this.initialLongitude,
+    this.name,
+    this.sigla,
   });
 
   Future<void> initialize() async {
@@ -37,6 +55,21 @@ class MapController extends ChangeNotifier {
 
   void onMapCreated(GoogleMapController controller) {
     _googleMapController = controller;
+    controller.setMapStyle(_noPoiTransitStyle);
+    notifyListeners();
+  }
+
+  void onMarkerTapped(MarkerId markerId) {
+    // Solo mostrar el card si es el marcador de destino
+    if (markerId.value == sigla) {
+      _showInfoCard = true;
+      notifyListeners();
+    }
+  }
+
+  void hideInfoCard() {
+    _showInfoCard = false;
+    notifyListeners();
   }
 
   void _startLocationTracking() {
@@ -55,7 +88,7 @@ class MapController extends ChangeNotifier {
   }
 
   void _updateUserMarker(LatLng position) {
-    _googleMapController?.animateCamera(CameraUpdate.newLatLng(position));
+    //_googleMapController?.animateCamera(CameraUpdate.newLatLng(position));
     
     _userMarker = Marker(
       markerId: const MarkerId('user_location'),

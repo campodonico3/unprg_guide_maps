@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:unprg_guide_maps/data/models/faculty_item.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/controller/map_controller.dart';
+import 'package:unprg_guide_maps/presentation/pages/map/widgets/info_card.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/widgets/map_widget.dart';
 
 class FlutterMapPage extends StatefulWidget {
@@ -32,6 +33,8 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
     _mapController = MapController(
       initialLatitude: widget.initialLatitude,
       initialLongitude: widget.initialLongitude,
+      name: widget.name,
+      sigla: widget.sigla,
     );
     _mapController.initialize();
   }
@@ -48,12 +51,36 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       appBar: AppBar(
         title: Text(_buildTitle()),
       ),
-      body: MapWidget(
-        mapController: _mapController,
-        sigla: widget.sigla,
-        name: widget.name,
-        initialLatitude: widget.initialLatitude,
-        initialLongitude: widget.initialLongitude,
+      body: Stack(
+        children: [
+          MapWidget(
+            mapController: _mapController,
+            sigla: widget.sigla,
+            name: widget.name,
+            initialLatitude: widget.initialLatitude,
+            initialLongitude: widget.initialLongitude,
+          ),
+          // Card de información
+          ListenableBuilder(
+            listenable: _mapController, 
+            builder:(context, _) {
+              if (!_mapController.showInfoCard) return const SizedBox.shrink();
+
+              return Positioned(
+                top: 20,
+                left: 20,
+                right: 20,              
+                child: InfoCard(
+                  sigla: widget.sigla,
+                  name: widget.name,
+                  latitude: widget.initialLatitude,
+                  longitude: widget.initialLongitude,
+                  onClose: _mapController.hideInfoCard,
+                ),
+              );
+            }
+          )
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _mapController.recalculateRoute,
