@@ -28,14 +28,15 @@ class InfoCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
+          /* gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
+              Colors.blue.shade100,
               Colors.blue.shade50,
-              Colors.white,
             ],
-          ),
+          ), */
+          color: AppColors.background,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -60,7 +61,7 @@ class InfoCard extends StatelessWidget {
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                                  color: AppColors.primary,
                                 ),
                               ),
                             if (name != null) ...[
@@ -69,7 +70,7 @@ class InfoCard extends StatelessWidget {
                                 name!,
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Colors.grey.shade600,
+                                  color: AppColors.primaryLight,
                                   fontWeight: FontWeight.w500,
                                 ),
                                 maxLines: 2,
@@ -93,7 +94,7 @@ class InfoCard extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 16),
+            /* const SizedBox(height: 16),
 
             // Información de coordenadas
             Container(
@@ -118,7 +119,7 @@ class InfoCard extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
+            ), */
 
             const SizedBox(height: 16),
 
@@ -136,9 +137,12 @@ class InfoCard extends StatelessWidget {
                         ),
                       );
                     },
-                    label: const Text('Ir'),
+                    label: const Text(
+                      'Iniciar navegación', 
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orangeAccent,
+                      backgroundColor: Colors.orange,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
@@ -154,7 +158,7 @@ class InfoCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCoordinateRow({
+  /* Widget _buildCoordinateRow({
     required IconData icon,
     required String label,
     required String value,
@@ -188,7 +192,7 @@ class InfoCard extends StatelessWidget {
         ),
       ],
     );
-  }
+  } */
 
   Widget _buildLocationImage() {
     return Container(
