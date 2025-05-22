@@ -1,4 +1,4 @@
-/*import 'package:flutter/material.dart';
+/* import 'package:flutter/material.dart';
 import 'package:unprg_guide_maps/core/constants/app_colors.dart';
 import 'package:unprg_guide_maps/core/constants/app_style.dart';
 import 'package:unprg_guide_maps/core/constants/map_constants.dart';
@@ -283,4 +283,4 @@ class LocationInfoCard extends StatelessWidget {
     );
   }
 }
-*/
+ */

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:unprg_guide_maps/core/constants/map_constants.dart';
 import 'package:unprg_guide_maps/data/models/faculty_item.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/controller/map_controller.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/widgets/info_card.dart';
@@ -26,6 +27,7 @@ class FlutterMapPage extends StatefulWidget {
 
 class _FlutterMapPageState extends State<FlutterMapPage> {
   late final MapController _mapController;
+  final MapConstants mapConstants = MapConstants();
 
   @override
   void initState() {
@@ -62,30 +64,48 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
           ),
           // Card de información
           ListenableBuilder(
-            listenable: _mapController, 
-            builder:(context, _) {
-              if (!_mapController.showInfoCard) return const SizedBox.shrink();
+              listenable: _mapController,
+              builder: (_, __) {
+                if (!_mapController.showInfoCard) {
+                  return const SizedBox.shrink();
+                }
 
-              return Positioned(
-                top: 20,
-                left: 20,
-                right: 20,              
-                child: InfoCard(
-                  sigla: widget.sigla,
-                  name: widget.name,
-                  latitude: widget.initialLatitude,
-                  longitude: widget.initialLongitude,
-                  onClose: _mapController.hideInfoCard,
-                ),
-              );
-            }
-          )
+                return Positioned(
+                  bottom: 0,
+                  left: 20,
+                  right: 20,
+                  child: InfoCard(
+                    sigla: widget.sigla,
+                    name: widget.name,
+                    latitude: widget.initialLatitude,
+                    longitude: widget.initialLongitude,
+                    onClose: _mapController.hideInfoCard,
+                  ),
+                );
+              })
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: ListenableBuilder(
+        listenable: _mapController,
+        builder: (_, __) {
+          final bottomPadding = _mapController.showInfoCard
+              ? MapConstants.infoCardHeightApprox +
+                  MapConstants.fabDefaultBottom
+              : MapConstants.fabDefaultBottom;
+
+          return Padding(
+            padding: EdgeInsets.only(bottom: bottomPadding, right: 16),
+            child: FloatingActionButton(
+              onPressed: _mapController.recalculateRoute,
+              child: const Icon(Icons.route),
+            ),
+          );
+        },
+      ),
+      /* floatingActionButton: FloatingActionButton(
         onPressed: _mapController.recalculateRoute,
         child: const Icon(Icons.route),
-      ),
+      ), */
     );
   }
 

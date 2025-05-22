@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import 'package:unprg_guide_maps/core/constants/app_colors.dart';
 
 class InfoCard extends StatelessWidget {
   final String? sigla;
@@ -48,18 +48,7 @@ class InfoCard extends StatelessWidget {
                 Expanded(
                   child: Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade100,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          Icons.location_on,
-                          color: Colors.blue.shade700,
-                          size: 20,
-                        ),
-                      ),
+                      _buildLocationImage(),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -103,9 +92,9 @@ class InfoCard extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Información de coordenadas
             Container(
               padding: const EdgeInsets.all(12),
@@ -130,9 +119,9 @@ class InfoCard extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Botones de acción
             Row(
               children: [
@@ -147,36 +136,12 @@ class InfoCard extends StatelessWidget {
                         ),
                       );
                     },
-                    icon: const Icon(Icons.directions, size: 18),
-                    label: const Text('Direcciones'),
+                    label: const Text('Ir'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade600,
+                      backgroundColor: Colors.orangeAccent,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      // Aquí puedes agregar funcionalidad para compartir ubicación
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Compartiendo ubicación...'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.share, size: 18),
-                    label: const Text('Compartir'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.blue.shade600,
-                      side: BorderSide(color: Colors.blue.shade600),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
                   ),
@@ -222,6 +187,22 @@ class InfoCard extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildLocationImage() {
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.all(Radius.circular(20)),
+        image: DecorationImage(
+          image: AssetImage(
+              'assets/images/facultades/img_${sigla?.toLowerCase()}_logo.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
     );
   }
 }

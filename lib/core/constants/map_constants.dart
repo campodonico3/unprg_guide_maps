@@ -13,17 +13,16 @@ class MapConstants {
   // Marker dimensions
   static const double markerWidth = 80.0;
   static const double markerHeight = 80.0;
-  
+
   // Card gesture threshold
   static const double dragThreshold = 300.0;
 
   // Margins and padding
   static const EdgeInsets defaultPadding = EdgeInsets.all(16.0);
 
-   // Animation durations
+  // Animation durations
   static const Duration animationDuration = Duration(milliseconds: 300);
 
-  
   // Route styling
   static const double routeLineWidth = 4.0;
   //static const Color routeColor = Colors.orange;
@@ -37,4 +36,9 @@ class MapConstants {
   static const Color routeColor = Colors.blue;
   static const Color connectorColor = Colors.grey;
   static const double minDistanceThreshold = 0.0001;
+
+  // Para el card cuando aparezca y desaparezca
+  static const double fabDefaultBottom = 1;
+  // Aproxima la altura de tu InfoCard + margenes
+  static const double infoCardHeightApprox = 255;
 }
