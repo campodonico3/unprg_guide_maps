@@ -49,7 +49,6 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
   // Colores y estilos para las polilíneas
   static const Color routeColor = Colors.blue;
   static const Color connectorColor = Colors.grey;
-  static const List<int> connectorPattern = [5, 5];
 
   @override
   void initState() {
@@ -290,7 +289,7 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
     }
   } */
 
-  /// Método para crear las polylines con conectores
+  /// Dibuja la ruta principal y líneas punteadas de conexión (origin/destination)
   void _createAndSetPolylines({
     required LatLng origin,
     required LatLng destination,
@@ -300,7 +299,7 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
     setState(() {
       polylines.clear();
       
-      // 1. Añadir la polyline principal (ruta)
+      // 1. Añadir la polyline principal
       polylines.add(
         Polyline(
           polylineId: const PolylineId('main_route'),
@@ -416,12 +415,13 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
           ),
           if (_userMarker != null) _userMarker!,
         },
-        polylines: polylines, // Añadimos la polilínea al mapa
+        polylines: polylines,
         myLocationEnabled: true,
         zoomControlsEnabled: false,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          // Recalcular ruta al presionar el botón
           if (_userMarker != null) {
             _getPolyline(
               origin: _userMarker!.position, 
