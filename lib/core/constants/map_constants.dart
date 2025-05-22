@@ -26,6 +26,15 @@ class MapConstants {
   
   // Route styling
   static const double routeLineWidth = 4.0;
-  static const Color routeColor = Colors.orange;
+  //static const Color routeColor = Colors.orange;
   static const double routePointRadius = 8.0;
+
+  // Constantes para la pagina mapa
+  static const String googleApiKey = "AIzaSyA-v4R7vSN0nEb-U_m_mE_vjm55hwUjtj0";
+  static const double defaultZoom = 16.0;
+  static const int polylineWidth = 5;
+  static const int connectorWidth = 3;
+  static const Color routeColor = Colors.blue;
+  static const Color connectorColor = Colors.grey;
+  static const double minDistanceThreshold = 0.0001;
 }
