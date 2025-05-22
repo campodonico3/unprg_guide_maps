@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:unprg_guide_maps/data/models/faculty_item.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/controller/map_controller.dart';
-import '../widgets/map_widget.dart';
+import 'package:unprg_guide_maps/presentation/pages/map/widgets/map_widget.dart';
 
 class FlutterMapPage extends StatefulWidget {
   final List<FacultyItem> locations;
