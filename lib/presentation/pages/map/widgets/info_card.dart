@@ -79,7 +79,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
   void _calculateHeights() {
     final screenHeight = MediaQuery.of(context).size.height;
     _collapsedHeight = 140.0;
-    _expandedHeight = screenHeight * 0.85;
+    _expandedHeight = screenHeight * 0.6;
   }
 
   void _handleDragStart(DragStartDetails details) {
@@ -197,7 +197,6 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
               child: Column(
                 children: [
                   _buildDragHandle(),
-                  const SizedBox(height: 2),
                   Expanded(
                     child: _buildContent(),
                   ),
@@ -228,13 +227,13 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
   }
 
   Widget _buildContent() {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16, top: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(context),
-          /* const SizedBox(height: 16),
+          const SizedBox(height: 16),
           _buildLocationInfo(),
           const SizedBox(height: 16),
           _buildActionButton(context),
@@ -249,7 +248,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
                 _buildExpandedContent(),
               ],
             ),
-          ), */
+          ),
         ],
       ),
     );
