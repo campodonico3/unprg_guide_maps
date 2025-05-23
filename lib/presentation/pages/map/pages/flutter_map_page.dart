@@ -102,10 +102,6 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
           );
         },
       ),
-      /* floatingActionButton: FloatingActionButton(
-        onPressed: _mapController.recalculateRoute,
-        child: const Icon(Icons.route),
-      ), */
     );
   }
 

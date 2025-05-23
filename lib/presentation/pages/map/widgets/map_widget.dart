@@ -44,7 +44,6 @@ class MapWidget extends StatelessWidget {
       position: LatLng(initialLatitude, initialLongitude),
       infoWindow: InfoWindow(
         title: sigla,
-        snippet: name,
       ),
       onTap: () {
         mapController.onMarkerTapped(destinationMarkerId);
@@ -62,22 +61,6 @@ class MapWidget extends StatelessWidget {
         },
       ));
     }
-
-    /* final markers = <Marker>{
-      Marker(
-        markerId: MarkerId(sigla ?? 'location_marker'),
-        position: LatLng(initialLatitude, initialLongitude),
-        infoWindow: InfoWindow(
-          title: sigla,
-          snippet: name,
-        ),
-      ),
-    };
-
-    if (mapController.userMarker != null) {
-      markers.add(mapController.userMarker!);
-    } */
-
     return markers;
   }
 }
