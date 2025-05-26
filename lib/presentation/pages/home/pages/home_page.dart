@@ -5,6 +5,7 @@ import "package:unprg_guide_maps/data/models/faculty_item.dart";
 import "package:unprg_guide_maps/data/repositories/faculty_repository.dart";
 import "package:unprg_guide_maps/presentation/pages/home/widgets/faculty_card.dart";
 import "package:unprg_guide_maps/presentation/pages/home/widgets/search_bar_widget.dart";
+import "package:unprg_guide_maps/presentation/pages/map/pages/flutter_map_page.dart";
 //import "package:unprg_guide_maps/presentation/pages/map/pages/flutter_map_page.dart";
 
 class HomePage extends StatefulWidget {
@@ -258,21 +259,26 @@ class _HomePageState extends State<HomePage>
       child: const Icon(Icons.map, color: Colors.white),
       onPressed: () {
         // Combinar facultades y oficinas para pasarlas a FlutterMapPage
-        // final List<FacultyItem> allLocations = [
-        //   ..._faculties.where((faculty) => faculty.latitude != null && faculty.longitude != null),
-        //   ..._offices.where((office) => office.latitude != null && office.longitude != null),
-        // ];
+        final allLocations = [
+          ..._faculties.where((f) => f.latitude != null && f.longitude != null),
+          ..._offices.where((o) => o.latitude != null && o.longitude != null),
+        ];
 
-        /* Navigator.push(
+        // Navegar a la página del mapa con las ubicaciones combinadas
+        if(allLocations.isEmpty) return;
+
+        // Asegurarse de que haya al menos una ubicación válida
+        Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) {
-              return FlutterMapPage(
-                locations: allLocations,
-              );
-            },
+            builder: (context) => FlutterMapPage(
+              locations: allLocations,
+              initialLatitude: allLocations.first.latitude!,
+              initialLongitude: allLocations.first.longitude!,
+              showMultipleMarkers: true,
+            ),
           ),
-        ); */
+        );
       },
     );
   }

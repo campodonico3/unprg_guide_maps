@@ -28,7 +28,7 @@ class MapWidget extends StatelessWidget {
           initialCameraPosition: mapController.initialPosition,
           markers: _buildMarkers(),
           polylines: mapController.polylines,
-          myLocationEnabled: true,
+          myLocationEnabled: !mapController.showMultipleMarkers, // Deshabilitar si usamos marcador personalizado
           zoomControlsEnabled: false,
         );
       },
@@ -36,30 +36,43 @@ class MapWidget extends StatelessWidget {
   }
 
   Set<Marker> _buildMarkers() {
-    final destinationMarkerId = MarkerId(sigla ?? 'destination_marker');
+    final markers = <Marker>{};
 
-    // Marcador de destino con callback onTap
-    final destinationMarker = Marker(
-      markerId: destinationMarkerId,
-      position: LatLng(initialLatitude, initialLongitude),
-      infoWindow: InfoWindow(
-        title: sigla,
-      ),
-      onTap: () {
-        mapController.onMarkerTapped(destinationMarkerId);
-      },
-    );
+    if(mapController.showMultipleMarkers){
+      // Modo múltiples marcadores
+      markers.addAll(mapController.locationMarkers);
 
-    final markers = <Marker>{destinationMarker};  
+      // Agregar marcador de usuario si existe
+      if (mapController.userMarker != null){
+        markers.add(mapController.userMarker!);
+      }
 
-    // Si hay marcador de usuario, le agregamos también onTap si queremos:
-    if(mapController.userMarker != null) {
-      final userM = mapController.userMarker!;
-      markers.add(userM.copyWith(
-        onTapParam: () {
-          mapController.onMarkerTapped(userM.markerId);
+    }else{
+      // Modo marcador individual (original)
+      final destinationMarkerId = MarkerId(sigla ?? 'destination_marker');
+
+      final destinationMarker = Marker(
+        markerId: destinationMarkerId,
+        position: LatLng(initialLatitude, initialLongitude),
+        infoWindow: InfoWindow(
+          title: sigla,
+        ),
+        onTap: () {
+          mapController.onMarkerTapped(destinationMarkerId);
         },
-      ));
+      );
+
+      markers.add(destinationMarker);
+
+      // Agregar marcador de usuario si existe
+      if (mapController.userMarker != null) {
+        final userM = mapController.userMarker!;
+        markers.add(userM.copyWith(
+          onTapParam: () {
+            mapController.onMarkerTapped(userM.markerId);
+          },
+        ));
+      }
     }
     return markers;
   }
