@@ -38,6 +38,7 @@ flutter:
   assets:
     - assets/images/
     - assets/images/facultades/
+    - assets/images/info_card_facultades/ficsa/img_ficsa.jpg
     - assets/images/unprg_logo.png
     - assets/images/fondo1.jpeg
 

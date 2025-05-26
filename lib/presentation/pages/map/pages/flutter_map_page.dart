@@ -57,7 +57,14 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_buildTitle()),
+        title: Text(
+          _buildTitle(),
+          style: TextStyle(
+            color: AppColors.background,
+          ),
+        ),
+        foregroundColor: AppColors.background,
+        backgroundColor: AppColors.primary,
       ),
       body: Stack(
         children: [
@@ -99,9 +106,9 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
                       longitude: widget.initialLongitude,
                       onClose: _mapController.hideInfoCard,
                       imagesUrls: [
-                        'assets/images/info_card_facultades/ficsa/img_ficsa.jpg'
-                        'assets/images/info_card_facultades/ficsa/img_ficsa1.jpg',
-                        'assets/images/info_card_facultades/ficsa/img_ficsa2.jpg',                    
+                        'assets/images/img_presentacion_1.png',
+                        'assets/images/img_presentacion_2.jpg',
+                        'assets/images/img_presentacion_3.jpg',
                       ],
                     ),
                   );
