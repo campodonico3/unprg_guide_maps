@@ -98,6 +98,11 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
                       latitude: widget.initialLatitude,
                       longitude: widget.initialLongitude,
                       onClose: _mapController.hideInfoCard,
+                      imagesUrls: [
+                        'assets/images/img_ficsa.jpg',
+                        'assets/images/img_ficsa1.jpg',
+                        'assets/images/img_ficsa2.jpg',
+                      ],
                     ),
                   );
                 }

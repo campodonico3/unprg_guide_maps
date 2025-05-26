@@ -7,6 +7,7 @@ class InfoCard extends StatefulWidget {
   final double latitude;
   final double longitude;
   final VoidCallback onClose;
+  final List<String>? imagesUrls;
 
   const InfoCard({
     super.key,
@@ -15,6 +16,7 @@ class InfoCard extends StatefulWidget {
     required this.latitude,
     required this.longitude,
     required this.onClose,
+    this.imagesUrls,
   });
 
   @override
@@ -256,10 +258,11 @@ class _InfoCardState extends State<InfoCard>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(context), // Encabezado con imagen, sigla y nombre
-          const SizedBox(height: 16),
-          _buildLocationInfo(), // Información de ubicación
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),          
           _buildActionButton(context), // Botón de navegación
+          const SizedBox(height: 16),
+          _buildImageGallery(), // Información de ubicación
+          const SizedBox(height: 16),
           // Contenido expandido con opacidad progresiva
           AnimatedOpacity(
             opacity: _getExpandedContentOpacity(),
@@ -273,6 +276,122 @@ class _InfoCardState extends State<InfoCard>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Widget que muestra la galería de imágenes optimizada
+  Widget _buildImageGallery() {
+    // Si ni hay impagenes, no mostrar nada
+    if (widget.imagesUrls == null || widget.imagesUrls!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('Imágenes del lugar'),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 100,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: widget.imagesUrls!.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: EdgeInsets.only(
+                    right: index < widget.imagesUrls!.length - 1 ? 12 : 0),
+                child: _buildImageThumbnail(widget.imagesUrls![index], index),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Widget que muestra una miniatura de imagen optimizada
+  Widget _buildImageThumbnail(String imageUrl, int index) {
+    return GestureDetector(
+      onTap: () => _openImageGallery(index),
+      child: Container(
+        width: 100,
+        height: 100,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: AppColors.surface,
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            children: [
+              // Imagen optimizada para miniatura
+              Image.asset(
+                imageUrl,
+                fit: BoxFit.cover,
+                width: 100,
+                height: 100,
+                cacheHeight: 150,
+                cacheWidth: 150,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 100,
+                    height: 100,
+                    color: Colors.grey[300],
+                    child: Icon(
+                      Icons.image_not_supported,
+                      color: Colors.grey[500],
+                      size: 30,
+                    ),
+                  );
+                },
+              ),
+              // Overñay sutil para indicar que es clickeable
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.1),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 4,
+                right: 4,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Icon(
+                    Icons.fullscreen,
+                    color: AppColors.surface,
+                    size: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Abre la galería de imágenes al hacer clic en una miniatura
+  void _openImageGallery(int initialIndex) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ImageGalleryScreen(
+          imageUrls: widget.imagesUrls!,
+          initialIndex: initialIndex,
+          locationName: widget.name ?? widget.sigla ?? 'Ubicación',
+        ),
       ),
     );
   }
@@ -353,18 +472,18 @@ class _InfoCardState extends State<InfoCard>
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: _handleNavigationPressed,
-        icon: const Icon(Icons.navigation, size: 20),
+        icon: const Icon(Icons.navigation, size: 16),
         label: const Text(
           'Iniciar navegación',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 16,
+            fontSize: 12,
           ),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.orange,
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -381,6 +500,13 @@ class _InfoCardState extends State<InfoCard>
       children: [
         _buildSectionTitle('Información adicional'),
         const SizedBox(height: 12),
+        _buildInfoRow('Coordenadas', '${widget.latitude}, ${widget.longitude}'),
+        _buildInfoRow('Código', widget.sigla ?? 'N/A'),
+        _buildInfoRow('Nombre completo', widget.name ?? 'N/A'),
+        const SizedBox(height: 20),
+        _buildSectionTitle('Acciones rápidas'),
+        const SizedBox(height: 12),
+        _buildQuickActions(),const SizedBox(height: 12),
         _buildInfoRow('Coordenadas', '${widget.latitude}, ${widget.longitude}'),
         _buildInfoRow('Código', widget.sigla ?? 'N/A'),
         _buildInfoRow('Nombre completo', widget.name ?? 'N/A'),
@@ -578,6 +704,142 @@ class _InfoCardState extends State<InfoCard>
   void dispose() {
     // Limpia el controlador de animación
     _animationController.dispose();
+    super.dispose();
+  }
+}
+
+/// Pantalla de galería de imágenes en pantalla completa
+class ImageGalleryScreen extends StatefulWidget {
+  final List<String> imageUrls;
+  final int initialIndex;
+  final String locationName;
+
+  const ImageGalleryScreen({
+    super.key,
+    required this.imageUrls,
+    required this.initialIndex,
+    required this.locationName,
+  });
+
+  @override
+  State<ImageGalleryScreen> createState() => _ImageGalleryScreenState();
+}
+
+class _ImageGalleryScreenState extends State<ImageGalleryScreen> {
+  late PageController _pageController;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(
+          '${_currentIndex + 1} de ${widget.imageUrls.length}',
+          style: const TextStyle(color: Colors.white),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share, color: Colors.white),
+            onPressed: _shareCurrentImage,
+          ),
+        ],
+      ),
+      body: Stack(
+        children: [
+          // Galería de imágenes
+          PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            itemCount: widget.imageUrls.length,
+            itemBuilder: (context, index) {
+              return Center(
+                child: InteractiveViewer(
+                  panEnabled: true,
+                  boundaryMargin: const EdgeInsets.all(20),
+                  minScale: 0.5,
+                  maxScale: 4.0,
+                  child: Image.asset(
+                    widget.imageUrls[index],
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              color: Colors.white,
+                              size: 64,
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'Error al cargar la imagen',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+          // Indicadores de página (solo si hay más de una imagen)
+          if (widget.imageUrls.length > 1)
+            Positioned(
+              bottom: 50,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: widget.imageUrls.asMap().entries.map((entry) {
+                  return Container(
+                    width: 8,
+                    height: 8,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _currentIndex == entry.key
+                          ? Colors.white
+                          : Colors.white.withOpacity(0.4),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _shareCurrentImage() {
+    // Implementar funcionalidad de compartir imagen
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Compartir imagen'),
+        backgroundColor: Colors.white24,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
     super.dispose();
   }
 }
