@@ -101,19 +101,6 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
                     ),
                   );
                 }
-
-                /* return Positioned(
-                  bottom: 0,
-                  left: 20,
-                  right: 20,
-                  child: InfoCard(
-                    sigla: widget.sigla,
-                    name: widget.name,
-                    latitude: widget.initialLatitude,
-                    longitude: widget.initialLongitude,
-                    onClose: _mapController.hideInfoCard,
-                  ),
-                ); */
               })
         ],
       ),
@@ -260,13 +247,13 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
     );
   }
 
-  void _centerOnUserLocation() {
+  /* void _centerOnUserLocation() {
     final userMarker = _mapController.userMarker;
     if (userMarker != null) {
       // Lógica para centrar en la ubicación del usuario
       // Puedes implementar esto en el MapController
     }
-  }
+  } */
 
   String _buildTitle() {
     /* if (widget.sigla != null && widget.name != null) {

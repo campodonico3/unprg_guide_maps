@@ -7,6 +7,7 @@ import 'package:unprg_guide_maps/core/services/marker_service.dart';
 import 'package:unprg_guide_maps/core/services/polyline_service.dart';
 import 'package:unprg_guide_maps/data/models/faculty_item.dart';
 
+// Estilo JSON para desactivar POIs y transporte público en el mapa
 const _noPoiTransitStyle = '''[
   {
     "featureType": "poi",
@@ -18,42 +19,53 @@ const _noPoiTransitStyle = '''[
   }
 ]''';
 
+/// Controlador para manejar la interacción con Google Maps,
+/// incluyendo marcadores, polilíneas de ruta y ubicación del usuario.
 class MapController extends ChangeNotifier {
+  // Coordenadas iniciales para centrar la cámara
   final double initialLatitude;
   final double initialLongitude;
   final String? name;
   final String? sigla;
-  final List<FacultyItem>?
-      allLocations; // Nueva propiedad para todas las ubicaciones
-  final bool
-      showMultipleMarkers; // Nueva propiedad para mostrar múltiples marcadores
+  // Lista completa de ubicaciones para el modo "múltiples marcadores"
+  final List<FacultyItem>? allLocations;
+  // Bandera para determinar si mostrar uno o varios marcadores
+  final bool showMultipleMarkers;
 
+  // Control interno para mostrar u ocultar el InfoCard
   bool _showInfoCard = false;
 
+  // Instancia del controlador de Google Maps
   GoogleMapController? _googleMapController;
+  // Servicios auxiliares
   final LocationService _locationService = LocationService();
   final PolylineService _polylineService = PolylineService();
   final MarkerService _markerService = MarkerService();
 
   StreamSubscription<LocationData>? _locationSubscription;
+  // Marcador personalizado del usuario
   Marker? _userMarker;
+  // Conjunto de polilíneas para la ruta
   Set<Polyline> _polylines = {};
+  // Conjunto de marcadores de ubicaciones
   Set<Marker> _locationMarkers = {};
+  // Identificador de la ubicación seleccionada
   String? _selectedLocationId;
 
-  // Getters
+  // --- Getters públicos para exponer el estado interno ---
   Marker? get userMarker => _userMarker;
   Set<Polyline> get polylines => _polylines;
   Set<Marker> get locationMarkers => _locationMarkers;
   String? get selectedLocationId => _selectedLocationId;
   bool get showInfoCard => _showInfoCard;
 
-  // Inicializar la posición de la cámara
+  /// Posición inicial de la cámara según el modo(múltiple o único)
   CameraPosition get initialPosition => CameraPosition(
         target: LatLng(initialLatitude, initialLongitude),
         zoom: showMultipleMarkers ? 14 : 16,
       );
 
+  /// Constructor, recibe coordenadas, modo y datos opcionales
   MapController({
     required this.initialLatitude,
     required this.initialLongitude,
@@ -63,19 +75,24 @@ class MapController extends ChangeNotifier {
     this.showMultipleMarkers = false,
   });
 
+  /// Inicializa servicios y, si aplica, crea marcadores múltiples
   Future<void> initialize() async {
     await _locationService.initialize();
 
     if (showMultipleMarkers) {
+      // Inicializa el servicio de creación de marcadores
       await _markerService.initialize();
+      // Construye marcadores para cada ubicación
       await _createMultipleMarkers();
     }
 
+    // Empieza seguimiento de la ub. del usuario
     _startLocationTracking();
   }
 
+  /// Crea marcadores para cada ubicación en allLocations
   Future<void> _createMultipleMarkers() async {
-    if (allLocations == null) return;
+    if (allLocations == null) return; // No hay ubicaciones
 
     final markers = <Marker>{};
 
@@ -95,12 +112,14 @@ class MapController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Muestra el InfoCard cuando el marcador es pulsado
   void _onLocationMarkerTapped(String locationId) {
     _selectedLocationId = locationId;
     _showInfoCard = true;
     notifyListeners();
   }
 
+  /// Retorna el FacultyItem seleccionado o null
   FacultyItem? getSelectedLocation() {
     if (_selectedLocationId == null || allLocations == null) return null;
 
@@ -113,12 +132,15 @@ class MapController extends ChangeNotifier {
     }
   }
 
+  /// Callback para cuando el mapa está listo
   void onMapCreated(GoogleMapController controller) {
     _googleMapController = controller;
+    // Aplica estilo para ocultar POIs y tránsito
     controller.setMapStyle(_noPoiTransitStyle);
     notifyListeners();
   }
 
+  /// Manejador genérico para pulsar cualquier marcador 
   void onMarkerTapped(MarkerId markerId) {
     if (showMultipleMarkers) {
       _onLocationMarkerTapped(markerId.value);
@@ -132,12 +154,14 @@ class MapController extends ChangeNotifier {
     }
   }
 
+  /// Oculta el InfoCard y resetea selección
   void hideInfoCard() {
     _showInfoCard = false;
     _selectedLocationId = null;
     notifyListeners();
   }
 
+  /// Inicia escucha de la ubicación y pide ruta inicial 
   void _startLocationTracking() {
     _locationSubscription =
         _locationService.locationStream.listen(_onLocationUpdate);
@@ -148,6 +172,7 @@ class MapController extends ChangeNotifier {
     }    
   }
 
+  /// Manejador actualización de ubicación del usuario
   void _onLocationUpdate(LocationData locationData) {
     if (locationData.latitude == null || locationData.longitude == null) return;
 
@@ -160,6 +185,7 @@ class MapController extends ChangeNotifier {
     }
   }
 
+  /// Crea o actualiza el marcador del usuario
   void _updateUserMarker(LatLng position) {
     //_googleMapController?.animateCamera(CameraUpdate.newLatLng(position));
     if(showMultipleMarkers){
@@ -177,6 +203,7 @@ class MapController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Construye un marcador personalizado para el usuario
   Future<void> _createCustomUserMarker(LatLng position) async {
     _userMarker = await _markerService.createUserLocationMarker(
       position,
@@ -187,12 +214,14 @@ class MapController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Solicita al PolylineService la ruta actual 
   Future<void> _updatePolyline(LatLng origin) async {
     final destination = LatLng(initialLatitude, initialLongitude);
     _polylines = await _polylineService.createRoute(origin, destination);
     notifyListeners();
   }
 
+  /// Obtiene la ubicación actual y calcula la ruta inicial 
   Future<void> _getInitialRoute() async {
     final location = await _locationService.getCurrentLocation();
     if (location != null) {
@@ -200,6 +229,7 @@ class MapController extends ChangeNotifier {
     }
   }
 
+  /// Recalcula la ruta al destino(solo en modo individual)
   Future<void> recalculateRoute() async {
     if (showMultipleMarkers) return; // En modo múltiples marcadores, no recalculamos la ruta
 
@@ -236,6 +266,7 @@ class MapController extends ChangeNotifier {
     }
   }
 
+  /// Ajusta bounds de cámara para incluir todas las ubicaciones y usuario
   void showAllLocations() {
     if (allLocations == null || _googleMapController == null) return;
 
@@ -246,6 +277,7 @@ class MapController extends ChangeNotifier {
     if (validLocations.isEmpty) return;
 
     // Calcular bounds para todas las ubicaciones
+    // Calcula extremos de latitud y longitud
     double minLat = validLocations.first.latitude!;
     double maxLat = validLocations.first.latitude!;
     double minLng = validLocations.first.longitude!;
@@ -277,6 +309,7 @@ class MapController extends ChangeNotifier {
 
   @override
   void dispose() {
+    // Cancelar subscripción y liberar controlador
     _locationSubscription?.cancel();
     _googleMapController?.dispose();
     super.dispose();
