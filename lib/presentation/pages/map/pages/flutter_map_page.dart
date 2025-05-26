@@ -256,10 +256,6 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
   } */
 
   String _buildTitle() {
-    /* if (widget.sigla != null && widget.name != null) {
-      return '${widget.sigla} - ${widget.name}';
-    }
-    return 'Mapa'; */
     if (widget.showMultipleMarkers) {
       return 'Mapa de Ubicaciones';
     }

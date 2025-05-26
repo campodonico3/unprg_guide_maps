@@ -83,11 +83,35 @@ class MapController extends ChangeNotifier {
       // Inicializa el servicio de creación de marcadores
       await _markerService.initialize();
       // Construye marcadores para cada ubicación
-      await _createMultipleMarkers();
+      await _createMultipleMarkersWithLabels();
+      notifyListeners();
     }
 
     // Empieza seguimiento de la ub. del usuario
     _startLocationTracking();
+  }
+
+  /// Crea marcadores con labels visibles para cada ubicación en allLocations
+  Future<void> _createMultipleMarkersWithLabels() async {
+    if (allLocations == null) return; // No hay ubicaciones
+
+    final markers = <Marker>{};
+
+    for (final location in allLocations!) {
+      if (location.latitude != null && location.longitude != null) {
+        // Usar el nuevo método que crea marcadores con labels
+        final marker = await _markerService.createLocationMarkerWithLabel(
+          location.sigla,
+          LatLng(location.latitude!, location.longitude!),
+          location.name,
+          false, // Por defecto no están seleccionados
+          onTap: () => _onLocationMarkerTapped(location.sigla),
+        );
+        markers.add(marker);
+      }
+    }
+    _locationMarkers = markers;
+    notifyListeners();
   }
 
   /// Crea marcadores para cada ubicación en allLocations
@@ -116,6 +140,36 @@ class MapController extends ChangeNotifier {
   void _onLocationMarkerTapped(String locationId) {
     _selectedLocationId = locationId;
     _showInfoCard = true;
+
+    // Actualizar marcadores para mostrar el seleccionado con diseño diferente
+    _updateMarkerSelection(locationId);
+
+    notifyListeners();
+  }
+
+  /// Actualiza los marcadores para mostrar cuál está seleccionado
+  Future<void> _updateMarkerSelection(String selectedLocationId) async {
+    if (allLocations == null) return;
+
+    final updatedMarkers = <Marker>{};
+
+    for (final location in allLocations!) {
+      if (location.latitude != null && location.longitude != null) {
+        final isSelected = location.sigla == selectedLocationId;
+        
+        // Recrear el marcador con el estado de selección correcto
+        final marker = await _markerService.createLocationMarkerWithLabel(
+          location.sigla,
+          LatLng(location.latitude!, location.longitude!),
+          location.name,
+          isSelected,
+          onTap: () => _onLocationMarkerTapped(location.sigla),
+        );
+        updatedMarkers.add(marker);
+      }
+    }
+    
+    _locationMarkers = updatedMarkers;
     notifyListeners();
   }
 
@@ -157,7 +211,14 @@ class MapController extends ChangeNotifier {
   /// Oculta el InfoCard y resetea selección
   void hideInfoCard() {
     _showInfoCard = false;
+    final previousSelectedId = _selectedLocationId;
     _selectedLocationId = null;
+
+    // Si había un marcador seleccionado, actualizar su apariencia
+    if (previousSelectedId != null && showMultipleMarkers) {
+      _updateMarkerSelection(''); // Deseleccionar todos los marcadores
+    }
+
     notifyListeners();
   }
 
@@ -287,7 +348,7 @@ class MapController extends ChangeNotifier {
       minLat = minLat < location.latitude! ? minLat : location.latitude!;
       maxLat = maxLat > location.latitude! ? maxLat : location.latitude!;
       minLng = minLng < location.longitude! ? minLng : location.longitude!;
-      minLng = maxLng > location.longitude! ? maxLng : location.longitude!;
+      maxLng = maxLng > location.longitude! ? maxLng : location.longitude!;
     }
 
     // Incluir ubicación del usuario si está disponible
