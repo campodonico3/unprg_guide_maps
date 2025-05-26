@@ -22,37 +22,42 @@ class InfoCard extends StatefulWidget {
 }
 
 class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin {
+  // Indica si la carta estpa expandida
   bool _isExpanded = false;
+  // Controlador de animación para expandir/colapsar la card
   late AnimationController _animationController;
-  late Animation<double> _heightAnimation;
+  // Animación que interpola el progreso de la altura(0.0 a 1.0)
+  late Animation<double> heightAnimation;
 
-  // Variables para el drag progresivo
+  // Variables para el drag(arrastre) progresivo
   double _dragProgress = 0.0; // 0.0 = colapsado, 1.0 = expandido
-  bool _isDragging = false;
-  double _initialDragY = 0.0;
+  bool _isDragging = false; // Indica si se está arrastrando
+  double _initialDragY = 0.0; // Posición inicial del drag
 
-  // Constantes para el comportamiento del drag
-  static const double _dragThreshold = 50.0;
+  // Constantes para el comportamiento del drag y velocidad
+  //static const double _dragThreshold = 50.0;
   static const double _velocityThreshold = 300.0;
   static const Duration _animationDuration = Duration(milliseconds: 300);
 
-  // Alturas de la card
+  // Alturas para estados colapsado y expandido
   late double _collapsedHeight;
   late double _expandedHeight;
 
   @override
   void initState() {
     super.initState();
+    // Inicializa el controlador y Tween
     _initializeAnimations();
   }
 
+  /// Configuración de AnimationController y Tween de altura
   void _initializeAnimations() {
     _animationController = AnimationController(
       duration: _animationDuration,
       vsync: this,
     );
 
-    _heightAnimation = Tween<double>(
+    heightAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(
@@ -60,7 +65,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
       curve: Curves.easeInOutCubic,
     ));
 
-    // Listener para actualizar el progreso durante animaciones automáticas
+    // Listener para actualizar el progreso durante animaciones automáticas y actualizar _dragProgress
     _animationController.addListener(() {
       if (!_isDragging) {
         setState(() {
@@ -73,21 +78,27 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    // Calcula alturas una vez que el contexto está disponible
     _calculateHeights();
   }
 
+  /// Calcula las alturas de la carta colapsada y expandida
   void _calculateHeights() {
     final screenHeight = MediaQuery.of(context).size.height;
-    _collapsedHeight = 140.0;
-    _expandedHeight = screenHeight * 0.6;
+    _collapsedHeight = 140.0; // Altura colapsada minima
+    _expandedHeight = screenHeight * 0.85; // 80% de alto de la pantalla
   }
 
+  // --- Manejadores de gestos verticales ---
+
+  /// Inicia arrastre, detiene animación en curso y guarda posición inicial
   void _handleDragStart(DragStartDetails details) {
     _animationController.stop();
     _isDragging = true;
     _initialDragY = details.globalPosition.dy;
   }
 
+  /// Actualiza el progreso del arrastre basado en el movimiento vertical
   void _handleDragUpdate(DragUpdateDetails details) {
     if (!_isDragging) return;
 
@@ -95,7 +106,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     final deltaY = _initialDragY - currentY; // Positivo hacia arriba
     final maxDragDistance = _expandedHeight - _collapsedHeight;
     
-    // Calcular el progreso basado en el movimiento del dedo
+    // Ajusta el progreso basado en el desplazamiento vertical del dedo 
     double newProgress = _dragProgress + (deltaY / maxDragDistance);
     newProgress = newProgress.clamp(0.0, 1.0);
 
@@ -107,6 +118,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     _initialDragY = currentY;
   }
 
+  /// Finaliza el arrastre, determina si expande o colapsa la carta
   void _handleDragEnd(DragEndDetails details) {
     _isDragging = false;
     final velocity = details.velocity.pixelsPerSecond.dy;
@@ -127,6 +139,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     }
   }
 
+  /// Expande la carta animando el progreso a 1.0
   void _expandCard() {
     setState(() => _isExpanded = true);
     _animationController.animateTo(1.0).then((_) {
@@ -138,6 +151,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     });
   }
 
+  /// Colapsa la carta animando el progreso a 0.0
   void _collapseCard() {
     setState(() => _isExpanded = false);
     _animationController.animateTo(0.0).then((_) {
@@ -149,10 +163,12 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     });
   }
 
-  void _closeCard() {
+  /// Llama al callback de cierre
+  /* void _closeCard() {
     widget.onClose();
-  }
+  } */
 
+  /// Alterna entre expandido y colapsado
   void _toggleExpansion() {
     if (_isExpanded) {
       _collapseCard();
@@ -165,6 +181,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
   double _getExpandedContentOpacity() {
     // El contenido expandido empieza a aparecer cuando el progreso es > 0.3
     if (_dragProgress <= 0.3) return 0.0;
+    // El contenido está completamente visible cuando el progreso es > 0.8
     if (_dragProgress >= 0.8) return 1.0;
     
     // Transición suave entre 0.3 y 0.8
@@ -174,6 +191,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      // Gestos para arrastre y toque
       onVerticalDragStart: _handleDragStart,
       onVerticalDragUpdate: _handleDragUpdate,
       onVerticalDragEnd: _handleDragEnd,
@@ -181,6 +199,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
       child: AnimatedContainer(
         duration: _isDragging ? Duration.zero : _animationDuration,
         curve: Curves.easeInOutCubic,
+        // Altura interpolada por _dragProgress
         height: _collapsedHeight + (_expandedHeight - _collapsedHeight) * _dragProgress,
         child: Card(
           elevation: 8,
@@ -196,7 +215,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
               ),
               child: Column(
                 children: [
-                  _buildDragHandle(),
+                  _buildDragHandle(), // Indicador visual de arrastre
                   Expanded(
                     child: _buildContent(),
                   ),
@@ -209,6 +228,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     );
   }
 
+  /// Widget(barra superior) que representa el indicador de arrastre
   Widget _buildDragHandle() {
     return Container(
       width: double.infinity,
@@ -226,17 +246,18 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     );
   }
 
+  /// Widget principal de la tarjeta en scroll
   Widget _buildContent() {
     return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16, top: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(context),
+          _buildHeader(context), // Encabezado con imagen, sigla y nombre
           const SizedBox(height: 16),
-          _buildLocationInfo(),
+          _buildLocationInfo(), // Información de ubicación
           const SizedBox(height: 16),
-          _buildActionButton(context),
+          _buildActionButton(context), // Botón de navegación
           // Contenido expandido con opacidad progresiva
           AnimatedOpacity(
             opacity: _getExpandedContentOpacity(),
@@ -245,7 +266,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 24),
-                _buildExpandedContent(),
+                _buildExpandedContent(), // Info adicional y acciones rápidas
               ],
             ),
           ),
@@ -254,6 +275,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     );
   }
 
+  /// Widget que muestra la imagen de la ubicación, sigla y nombre
   Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
@@ -292,6 +314,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     );
   }
 
+  /// Widget que muestra la información de ubicación (latitud y longitud)
   Widget _buildLocationInfo() {
     return Container(
       padding: const EdgeInsets.all(12),
@@ -322,6 +345,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     );
   }
 
+  /// Widget que muestra el botón de navegación
   Widget _buildActionButton(BuildContext context) {
     return SizedBox(
       width: double.infinity,
@@ -348,6 +372,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     );
   }
 
+  /// Widget que muestra el contenido expandido con información adicional
   Widget _buildExpandedContent() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -365,6 +390,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     );
   }
 
+  /// Widget que muestra el título de una sección
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
@@ -376,6 +402,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     );
   }
 
+  /// Widget que muestra una fila de información con etiqueta y valor
   Widget _buildInfoRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -405,6 +432,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     );
   }
 
+  /// Widget que muestra chips de las acciones rápidas (compartir, favorito, más info)
   Widget _buildQuickActions() {
     return Wrap(
       spacing: 8,
@@ -429,6 +457,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     );
   }
 
+  /// Widget que muestra un chip de acción rápida
   Widget _buildQuickActionChip({
     required IconData icon,
     required String label,
@@ -445,6 +474,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     );
   }
 
+  /// Widget que muestra la imagen de la ubicación
   Widget _buildLocationImage() {
     return Container(
       width: 80,
@@ -474,8 +504,10 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     );
   }
 
-  // Métodos de manejo de eventos
+  // ---------- Manejo de eventos de botones -----------
+
   void _handleNavigationPressed() {
+    // Muestra snack bar indicando navegación
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Obteniendo direcciones...'),
@@ -490,18 +522,21 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
   }
 
   void _handleSharePressed() {
+    // Muestra snack bar indicando compartir ubicación
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Compartir ubicación')),
     );
   }
 
   void _handleFavoritePressed() {
+    // Muestra snack bar indicando agregar a favoritos
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Agregado a favoritos')),
     );
   }
 
   void _handleMoreInfoPressed() {
+    // Muestra snack bar indicando más información
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Más información')),
     );
@@ -509,6 +544,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
 
   @override
   void dispose() {
+    // Limpia el controlador de animación
     _animationController.dispose();
     super.dispose();
   }
