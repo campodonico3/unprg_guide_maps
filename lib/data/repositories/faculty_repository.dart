@@ -132,8 +132,6 @@ class FacultyRepository {
         name: 'Oficina de Comunicación e Imagen Institucional',
         sigla: 'OCII',
         imageAsset: AssetsPath.unprgLogo,
-        /*latitude: -6.70749760689037,
-        longitude: -79.90452516138711,*/
       ),
       FacultyItem(
         name: 'Dirección General de Administración',
@@ -153,15 +151,15 @@ class FacultyRepository {
         name: 'Unidad de Recursos Humanos',
         sigla: 'URH',
         imageAsset: AssetsPath.unprgLogo,
-        /*latitude: -6.70749760689037,
-        longitude: -79.90452516138711,*/
+        latitude: -6.706831,
+        longitude: -79.907826,
       ),
       FacultyItem(
         name: 'Oficina de Tecnologías de la Información',
         sigla: 'OTI',
         imageAsset: AssetsPath.unprgLogo,
-        /*latitude: -6.70749760689037,
-        longitude: -79.90452516138711,*/
+        latitude: -6.706165680357074,
+        longitude: -79.90928435096573,
       ),
       FacultyItem(
         name: 'Unidad de Servicios Generales',

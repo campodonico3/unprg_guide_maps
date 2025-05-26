@@ -21,7 +21,8 @@ class InfoCard extends StatefulWidget {
   State<InfoCard> createState() => _InfoCardState();
 }
 
-class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin {
+class _InfoCardState extends State<InfoCard>
+    with SingleTickerProviderStateMixin {
   // Indica si la carta estpa expandida
   bool _isExpanded = false;
   // Controlador de animación para expandir/colapsar la card
@@ -105,8 +106,8 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     final currentY = details.globalPosition.dy;
     final deltaY = _initialDragY - currentY; // Positivo hacia arriba
     final maxDragDistance = _expandedHeight - _collapsedHeight;
-    
-    // Ajusta el progreso basado en el desplazamiento vertical del dedo 
+
+    // Ajusta el progreso basado en el desplazamiento vertical del dedo
     double newProgress = _dragProgress + (deltaY / maxDragDistance);
     newProgress = newProgress.clamp(0.0, 1.0);
 
@@ -125,7 +126,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
 
     // Determinar si debe expandirse o colapsarse basado en el progreso actual y velocidad
     bool shouldExpand;
-    
+
     if (velocity.abs() > _velocityThreshold) {
       shouldExpand = velocity < 0; // Velocidad hacia arriba
     } else {
@@ -183,7 +184,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
     if (_dragProgress <= 0.3) return 0.0;
     // El contenido está completamente visible cuando el progreso es > 0.8
     if (_dragProgress >= 0.8) return 1.0;
-    
+
     // Transición suave entre 0.3 y 0.8
     return ((_dragProgress - 0.3) / 0.5).clamp(0.0, 1.0);
   }
@@ -200,7 +201,8 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
         duration: _isDragging ? Duration.zero : _animationDuration,
         curve: Curves.easeInOutCubic,
         // Altura interpolada por _dragProgress
-        height: _collapsedHeight + (_expandedHeight - _collapsedHeight) * _dragProgress,
+        height: _collapsedHeight +
+            (_expandedHeight - _collapsedHeight) * _dragProgress,
         child: Card(
           elevation: 8,
           margin: EdgeInsets.only(bottom: 10),
@@ -482,6 +484,36 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
+      ),
+      child: widget.sigla != null
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                'assets/images/facultades/img_${widget.sigla!.toLowerCase()}_logo.png',
+                fit: BoxFit.cover,
+                // Si falla al cargar, carga el logo por defecto:
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset(
+                    'assets/images/unprg_logo.png',
+                    fit: BoxFit.contain,
+                  );
+                },
+              ),
+            )
+          : Icon(
+              Icons.location_on,
+              color: AppColors.primary,
+              size: 30,
+            ),
+    );
+  }
+  /* Widget _buildLocationImage() {
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
         image: widget.sigla != null
             ? DecorationImage(
                 image: AssetImage(
@@ -502,7 +534,7 @@ class _InfoCardState extends State<InfoCard> with SingleTickerProviderStateMixin
             )
           : null,
     );
-  }
+  } */
 
   // ---------- Manejo de eventos de botones -----------
 
