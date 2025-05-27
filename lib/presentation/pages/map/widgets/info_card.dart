@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart' as latlong2;
-import 'package:google_maps_flutter/google_maps_flutter.dart' show LatLng;
 import 'package:unprg_guide_maps/core/constants/app_colors.dart';
 
 class InfoCard extends StatefulWidget {

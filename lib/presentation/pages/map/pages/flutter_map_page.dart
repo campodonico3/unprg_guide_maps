@@ -5,6 +5,7 @@ import 'package:unprg_guide_maps/data/models/faculty_item.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/controller/map_controller.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/widgets/info_card.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/widgets/map_widget.dart';
+import 'package:unprg_guide_maps/presentation/pages/map/widgets/navigation_widget.dart';
 
 class FlutterMapPage extends StatefulWidget {
   final List<FacultyItem> locations;
@@ -74,6 +75,12 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
             name: widget.name,
             initialLatitude: widget.initialLatitude,
             initialLongitude: widget.initialLongitude,
+          ),
+          // Widget de Navegación
+          NavigationWidget(
+            navigationService: _mapController.navigationService,
+            onStopNavigation: _mapController.stopNavigation,
+            onToggleVoice: _mapController.toggleVoice, 
           ),
           // Card de información
           ListenableBuilder(

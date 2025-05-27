@@ -325,14 +325,9 @@ class MapController extends ChangeNotifier {
     }
   }
 
-  /// Permite reanudar o pausar guía de voz
-  void toggleVoice() {
-    _navigationService.toggleVoiceGuidance();
-  }
-
   /// Recalcula la ruta al destino(solo en modo individual)
   Future<void> recalculateRoute() async {
-     if (showMultipleMarkers) return;
+    if (showMultipleMarkers) return;
     final loc = await _locationService.getCurrentLocation();
     if (loc == null || _currentDestination == null) return;
     await _updatePolyline(
@@ -417,6 +412,45 @@ class MapController extends ChangeNotifier {
     );
 
     _googleMapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 100.0),);
+  }
+
+  /// Detiene completamente la navegación
+  void stopNavigation() {
+    // 1. Detener la navegación en el servicio
+    _navigationService.stopNavigation();
+    
+    // 2. Limpiar elementos visuales del mapa
+    _polylines.clear();
+    _currentRoutePoints.clear();
+    
+    // 3. Resetear estado relacionado
+    _currentDestination = null;
+    
+    // 4. Forzar actualización UI
+    notifyListeners();
+    
+    // 5. Opcional: Centrar mapa en ubicación actual
+    if (_userMarker != null) {
+      _googleMapController?.animateCamera(
+        CameraUpdate.newLatLng(_userMarker!.position),
+      );
+    }
+  }
+  
+  /// Permite reanudar o pausar guía de voz
+  void toggleVoice() {
+    _navigationService.toggleVoiceGuidance();
+    notifyListeners();
+  }
+
+  // Obtiene información del estado actual de navegación
+  Map<String, dynamic> getNavigationInfo() {
+    return _navigationService.getCurrentNavigationState();
+  }
+
+  /// Reinicia la navegación actual
+  Future<void> restartNavigation() async {
+    await _navigationService.restartNavigation();
   }
 
   @override
