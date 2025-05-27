@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart' as latlong2;
+import 'package:google_maps_flutter/google_maps_flutter.dart' show LatLng;
 import 'package:unprg_guide_maps/core/constants/app_colors.dart';
 
 class InfoCard extends StatefulWidget {
@@ -258,7 +260,7 @@ class _InfoCardState extends State<InfoCard>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(context), // Encabezado con imagen, sigla y nombre
-          const SizedBox(height: 20),          
+          const SizedBox(height: 20),
           _buildActionButton(context), // Botón de navegación
           const SizedBox(height: 16),
           _buildImageGallery(), // Información de ubicación
@@ -506,7 +508,8 @@ class _InfoCardState extends State<InfoCard>
         const SizedBox(height: 20),
         _buildSectionTitle('Acciones rápidas'),
         const SizedBox(height: 12),
-        _buildQuickActions(),const SizedBox(height: 12),
+        _buildQuickActions(),
+        const SizedBox(height: 12),
         _buildInfoRow('Coordenadas', '${widget.latitude}, ${widget.longitude}'),
         _buildInfoRow('Código', widget.sigla ?? 'N/A'),
         _buildInfoRow('Nombre completo', widget.name ?? 'N/A'),
@@ -677,6 +680,19 @@ class _InfoCardState extends State<InfoCard>
         ),
       ),
     );
+    // Navegas a la pantalla de navegación
+    /* Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => NavigationScreen(
+          destination: LatLng(
+            widget.latitude,
+            widget.longitude,
+          ),
+          locationName: widget.name,
+          locationCode: widget.sigla,
+        ),
+      ),
+    ); */
   }
 
   void _handleSharePressed() {

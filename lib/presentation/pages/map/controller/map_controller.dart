@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:unprg_guide_maps/core/services/location_service.dart';
 import 'package:unprg_guide_maps/core/services/marker_service.dart';
+import 'package:unprg_guide_maps/core/services/navigation_service.dart';
 import 'package:unprg_guide_maps/core/services/polyline_service.dart';
 import 'package:unprg_guide_maps/data/models/faculty_item.dart';
 
@@ -41,6 +42,7 @@ class MapController extends ChangeNotifier {
   final LocationService _locationService = LocationService();
   final PolylineService _polylineService = PolylineService();
   final MarkerService _markerService = MarkerService();
+  final NavigationService _navigationService = NavigationService();
 
   StreamSubscription<LocationData>? _locationSubscription;
   // Marcador personalizado del usuario
@@ -51,6 +53,10 @@ class MapController extends ChangeNotifier {
   Set<Marker> _locationMarkers = {};
   // Identificador de la ubicación seleccionada
   String? _selectedLocationId;
+  // Puntos de la ruta actual para navegación
+  List<LatLng> _currentRoutePoints = [];
+  // Almacena la ubicación actual del destino para navegación
+  LatLng? _currentDestination;
 
   // --- Getters públicos para exponer el estado interno ---
   Marker? get userMarker => _userMarker;
@@ -58,6 +64,13 @@ class MapController extends ChangeNotifier {
   Set<Marker> get locationMarkers => _locationMarkers;
   String? get selectedLocationId => _selectedLocationId;
   bool get showInfoCard => _showInfoCard;
+  NavigationService get navigationService => _navigationService;
+  List<LatLng> get currentRoutePoints => _currentRoutePoints;
+
+  /// Tiempo estimado de llegada (minutos)
+  int get etaMinutes => _navigationService.estimatedTimeMinutes;
+  /// Distancia restante formateada
+  String get remainingDistance => _navigationService.formatDistance(_navigationService.remainingDistance);
 
   /// Posición inicial de la cámara según el modo(múltiple o único)
   CameraPosition get initialPosition => CameraPosition(
@@ -73,7 +86,11 @@ class MapController extends ChangeNotifier {
     this.sigla,
     this.allLocations,
     this.showMultipleMarkers = false,
-  });
+  }){
+    if (!showMultipleMarkers){
+      _currentDestination = LatLng(initialLatitude, initialLongitude);
+    }
+  }
 
   /// Inicializa servicios y, si aplica, crea marcadores múltiples
   Future<void> initialize() async {
@@ -176,12 +193,9 @@ class MapController extends ChangeNotifier {
   /// Retorna el FacultyItem seleccionado o null
   FacultyItem? getSelectedLocation() {
     if (_selectedLocationId == null || allLocations == null) return null;
-
     try {
-      return allLocations!.firstWhere(
-        (location) => location.sigla == _selectedLocationId,
-      );
-    } catch (e) {
+      return allLocations!.firstWhere((location) => location.sigla == _selectedLocationId,);
+    } catch (_) {
       return null; // Si no se encuentra, retornar null
     }
   }
@@ -211,11 +225,11 @@ class MapController extends ChangeNotifier {
   /// Oculta el InfoCard y resetea selección
   void hideInfoCard() {
     _showInfoCard = false;
-    final previousSelectedId = _selectedLocationId;
+    final prev = _selectedLocationId;
     _selectedLocationId = null;
 
     // Si había un marcador seleccionado, actualizar su apariencia
-    if (previousSelectedId != null && showMultipleMarkers) {
+    if (prev != null && showMultipleMarkers) {
       _updateMarkerSelection(''); // Deseleccionar todos los marcadores
     }
 
@@ -224,8 +238,7 @@ class MapController extends ChangeNotifier {
 
   /// Inicia escucha de la ubicación y pide ruta inicial 
   void _startLocationTracking() {
-    _locationSubscription =
-        _locationService.locationStream.listen(_onLocationUpdate);
+    _locationSubscription = _locationService.locationStream.listen(_onLocationUpdate);
 
     // Solo obtener ruta inicial si no es modo múltiples marcadores
     if (!showMultipleMarkers){
@@ -234,29 +247,36 @@ class MapController extends ChangeNotifier {
   }
 
   /// Manejador actualización de ubicación del usuario
-  void _onLocationUpdate(LocationData locationData) {
-    if (locationData.latitude == null || locationData.longitude == null) return;
+  void _onLocationUpdate(LocationData data) {
+    if (data.latitude == null || data.longitude == null) return;
 
-    final latLng = LatLng(locationData.latitude!, locationData.longitude!);
-    _updateUserMarker(latLng);
+    final pos = LatLng(data.latitude!, data.longitude!);
+    _updateUserMarker(pos);
 
-    // Solo actualizar polyline si no es modo múltiples marcadores
+    if (_navigationService.isNavigating) {
+      _navigationService.updateCurrentLocation(data);
+      _googleMapController?.animateCamera(CameraUpdate.newLatLng(pos));
+    } else if(!showMultipleMarkers && _currentDestination != null) {
+      _updatePolyline(pos, _currentDestination!);
+    }
+
+    /* // Solo actualizar polyline si no es modo múltiples marcadores
     if (!showMultipleMarkers){
       _updatePolyline(latLng);
-    }
+    } */
   }
 
   /// Crea o actualiza el marcador del usuario
-  void _updateUserMarker(LatLng position) {
+  void _updateUserMarker(LatLng pos) {
     //_googleMapController?.animateCamera(CameraUpdate.newLatLng(position));
-    if(showMultipleMarkers){
+    if (showMultipleMarkers) {
       // En modo múltiples marcadores, no actualizamos el marcador del usuario
-      _createCustomUserMarker(position);
-    }else{
+      _createCustomUserMarker(pos);
+    } else {
       // En modo individual, usar el marcador por defecto
       _userMarker = Marker(
         markerId: const MarkerId('user_location'),
-        position: position,
+        position: pos,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
         infoWindow: const InfoWindow(title: 'Aquí estás tú'),
       );    
@@ -276,35 +296,66 @@ class MapController extends ChangeNotifier {
   }
 
   /// Solicita al PolylineService la ruta actual 
-  Future<void> _updatePolyline(LatLng origin) async {
-    final destination = LatLng(initialLatitude, initialLongitude);
+  Future<void> _updatePolyline(LatLng origin, LatLng destination) async {
     _polylines = await _polylineService.createRoute(origin, destination);
+    //_currentRoutePoints = _polylineService.routePoints;
+
+     // Iniciar o actualizar navegación con voz y TTS
+    if (!_navigationService.isNavigating) {
+      _navigationService.startNavigation(
+        destination: destination,
+        routePoints: _currentRoutePoints,
+        currentLocationData: LocationData.fromMap({
+          'latitude': origin.latitude,
+          'longitude': origin.longitude,
+        }),
+      );
+    }
     notifyListeners();
   }
 
   /// Obtiene la ubicación actual y calcula la ruta inicial 
   Future<void> _getInitialRoute() async {
-    final location = await _locationService.getCurrentLocation();
-    if (location != null) {
-      await _updatePolyline(location);
+    final loc = await _locationService.getCurrentLocation();
+    if (loc != null && _currentDestination != null) {
+      await _updatePolyline(
+        LatLng(loc.latitude, loc.longitude),
+        _currentDestination!,
+      );
     }
+  }
+
+  /// Permite reanudar o pausar guía de voz
+  void toggleVoice() {
+    _navigationService.toggleVoiceGuidance();
   }
 
   /// Recalcula la ruta al destino(solo en modo individual)
   Future<void> recalculateRoute() async {
-    if (showMultipleMarkers) return; // En modo múltiples marcadores, no recalculamos la ruta
-
-    final currentLocation =
-        _userMarker?.position ?? await _locationService.getCurrentLocation();
-
-    if (currentLocation != null) {
-      await _updatePolyline(currentLocation);
-    }
+     if (showMultipleMarkers) return;
+    final loc = await _locationService.getCurrentLocation();
+    if (loc == null || _currentDestination == null) return;
+    await _updatePolyline(
+      LatLng(loc.latitude, loc.longitude),
+      _currentDestination!,
+    );
   }
 
   // Método para centrar el mapa en una ubicación específica
   void centerOnLocation(String locationId) {
-    if (allLocations == null || _googleMapController == null) return;
+     if (allLocations == null || _googleMapController == null) return;
+    try {
+      final loc = allLocations!.firstWhere((l) => l.sigla == locationId);
+      if (loc.latitude != null && loc.longitude != null) {
+        _googleMapController!.animateCamera(
+          CameraUpdate.newLatLngZoom(
+            LatLng(loc.latitude!, loc.longitude!),
+            18,
+          ),
+        );
+      }
+    } catch (_) {}
+    /* if (allLocations == null || _googleMapController == null) return;
 
     try {
       final location = allLocations!.firstWhere(
@@ -324,7 +375,7 @@ class MapController extends ChangeNotifier {
 
     }catch (e) {
       debugPrint('Error al centrar en la ubicación: $e');
-    }
+    } */
   }
 
   /// Ajusta bounds de cámara para incluir todas las ubicaciones y usuario
@@ -373,6 +424,7 @@ class MapController extends ChangeNotifier {
     // Cancelar subscripción y liberar controlador
     _locationSubscription?.cancel();
     _googleMapController?.dispose();
+    _navigationService.stopNavigation();
     super.dispose();
   }
 }
