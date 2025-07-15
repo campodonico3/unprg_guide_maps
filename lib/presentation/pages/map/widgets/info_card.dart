@@ -634,34 +634,6 @@ class _InfoCardState extends State<InfoCard>
             ),
     );
   }
-  /* Widget _buildLocationImage() {
-    return Container(
-      width: 80,
-      height: 80,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        image: widget.sigla != null
-            ? DecorationImage(
-                image: AssetImage(
-                  'assets/images/facultades/img_${widget.sigla!.toLowerCase()}_logo.png',
-                ),
-                fit: BoxFit.cover,
-                onError: (exception, stackTrace) {
-                  // Manejar error de imagen
-                },
-              )
-            : null,
-      ),
-      child: widget.sigla == null
-          ? Icon(
-              Icons.location_on,
-              color: AppColors.primary,
-              size: 30,
-            )
-          : null,
-    );
-  } */
 
   // ---------- Manejo de eventos de botones -----------
 
@@ -678,19 +650,6 @@ class _InfoCardState extends State<InfoCard>
         ),
       ),
     );
-    // Navegas a la pantalla de navegación
-    /* Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => NavigationScreen(
-          destination: LatLng(
-            widget.latitude,
-            widget.longitude,
-          ),
-          locationName: widget.name,
-          locationCode: widget.sigla,
-        ),
-      ),
-    ); */
   }
 
   void _handleSharePressed() {

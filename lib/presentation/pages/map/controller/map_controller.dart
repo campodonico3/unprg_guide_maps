@@ -54,7 +54,7 @@ class MapController extends ChangeNotifier {
   // Identificador de la ubicación seleccionada
   String? _selectedLocationId;
   // Puntos de la ruta actual para navegación
-  List<LatLng> _currentRoutePoints = [];
+  final List<LatLng> _currentRoutePoints = [];
   // Almacena la ubicación actual del destino para navegación
   LatLng? _currentDestination;
 

@@ -5,15 +5,20 @@ import 'package:unprg_guide_maps/core/constants/app_colors.dart';
 
 /// Servicio de creación de marcadores con etiqueta visible (sigla) integrada en el icono
 class MarkerService {
+  // Icono para una ubicación genérica no seleccionada
   BitmapDescriptor? _defaultLocationIcon;
+  // Icono para una ubicación seleccionada
   BitmapDescriptor? _selectedLocationIcon;
+  // Icono para la ubicación del usuario
   BitmapDescriptor? _userLocationIcon;
 
+  // Verifica si los iconos han sido cargados
   bool get isInitialized =>
       _defaultLocationIcon != null &&
       _selectedLocationIcon != null &&
       _userLocationIcon != null;
 
+  // Inicializa los iconos si aún no se han creado
   Future<void> initialize() async {
     if (isInitialized) return;
 
@@ -39,13 +44,14 @@ class MarkerService {
     final pictureRecorder = ui.PictureRecorder();
     final canvas = Canvas(pictureRecorder);
 
-    // Configurar el texto
+    // Estilo del texto principal
     final textStyle = ui.TextStyle(
       color: isSelected ? AppColors.warning : AppColors.primary,
       fontSize: isSelected ? 20.0 : 16.0,
       fontWeight: FontWeight.bold,
     );
 
+    // Configuración del párrafo (alineación, dirección, etc.)
     final paragraphStyle = ui.ParagraphStyle(
       textAlign: TextAlign.left,
       fontSize: isSelected ? 20.0 : 16.0,
@@ -54,17 +60,18 @@ class MarkerService {
       textDirection: ui.TextDirection.ltr,
     );
 
+    // Construye el texto
     final builder = ui.ParagraphBuilder(paragraphStyle)
       ..pushStyle(textStyle)
       ..addText(sigla);
-
     final paragraph = builder.build();
     paragraph.layout(ui.ParagraphConstraints(width: totalWidth));
 
     // Posición del marcador (centrado verticalmente)
     final markerX = 10.0;
     final markerY = (totalHeight - markerSize) / 2;
-    final markerCenter = Offset(markerX + markerSize / 2, markerY + markerSize / 2);
+    final markerCenter =
+        Offset(markerX + markerSize / 2, markerY + markerSize / 2);
 
     // Sombra del marcador
     final markerShadowPaint = Paint()
@@ -104,22 +111,22 @@ class MarkerService {
     // Dibujar el texto al costado del marcador (con sombra para mejor legibilidad)
     final textX = markerX + markerSize + textPadding;
     final textY = markerY + (markerSize - paragraph.height) / 2;
-    
+
     // Sombra del texto
     final shadowTextStyle = ui.TextStyle(
       color: Colors.black.withOpacity(0.3),
       fontSize: isSelected ? 20.0 : 16.0,
       fontWeight: FontWeight.bold,
     );
-    
+
     final shadowBuilder = ui.ParagraphBuilder(paragraphStyle)
       ..pushStyle(shadowTextStyle)
       ..addText(sigla);
-    
+
     final shadowParagraph = shadowBuilder.build();
     shadowParagraph.layout(ui.ParagraphConstraints(width: totalWidth));
     canvas.drawParagraph(shadowParagraph, Offset(textX + 1, textY + 1));
-    
+
     // Texto principal
     canvas.drawParagraph(paragraph, Offset(textX, textY));
 
@@ -134,6 +141,7 @@ class MarkerService {
   }
 
   // Create a custom location marker bitmap (versión original sin label)
+  // Crea un marcador básico circular (sin texto)
   Future<BitmapDescriptor> _createLocationMarkerBitmap(bool isSelected) async {
     final size = isSelected ? 120.0 : 100.0;
     final pictureRecorder = ui.PictureRecorder();
@@ -141,26 +149,26 @@ class MarkerService {
     final paint = Paint()
       ..color = isSelected ? AppColors.warning : AppColors.primary;
 
-    // Draw the shadow
+    // Sombra
     final shadowPaint = Paint()
       ..color = Colors.black.withOpacity(0.3)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
     canvas.drawCircle(
         Offset(size / 2, size / 2 + 2), size / 2 - 12, shadowPaint);
 
-    // Draw the main circle
+    // Círculo principal
     canvas.drawCircle(Offset(size / 2, size / 2), size / 2 - 12, paint);
 
-    // Draw the inner circle (white)
+    // Círculo blanco interior
     final innerPaint = Paint()..color = Colors.white;
     canvas.drawCircle(Offset(size / 2, size / 2), size / 3 - 6, innerPaint);
 
-    // Draw the dot in the center
+    // Punto central
     final centerPaint = Paint()
       ..color = isSelected ? AppColors.accent : AppColors.primary;
     canvas.drawCircle(Offset(size / 2, size / 2), size / 6, centerPaint);
 
-    // Draw the pointer at the bottom
+    // Triángulo como puntero
     final path = Path();
     path.moveTo(size / 2, size - 10);
     path.lineTo(size / 2 - 10, size / 2 + 10);
@@ -177,7 +185,7 @@ class MarkerService {
     return BitmapDescriptor.fromBytes(data!.buffer.asUint8List());
   }
 
-  // Create a custom user location marker bitmap
+  /// Crea un icono personalizado para la ubicación del usuario
   Future<BitmapDescriptor> _createUserLocationMarkerBitmap() async {
     const size = 100.0;
     final pictureRecorder = ui.PictureRecorder();
@@ -217,6 +225,7 @@ class MarkerService {
     return BitmapDescriptor.fromBytes(data!.buffer.asUint8List());
   }
 
+  /// Crea un marcador con etiqueta (texto visible junto al ícono)
   // Método actualizado para crear marcadores con labels
   Future<Marker> createLocationMarkerWithLabel(
       String id, LatLng position, String snippet, bool isSelected,
@@ -233,6 +242,7 @@ class MarkerService {
     );
   }
 
+  /// Crea un marcador simple (sin etiqueta)
   Future<Marker> createLocationMarker(
       String id, LatLng position, String snippet, bool isSelected,
       {required Function() onTap}) async {
@@ -250,6 +260,7 @@ class MarkerService {
     );
   }
 
+  /// Crea un marcador para la ubicación actual del usuario
   Future<Marker> createUserLocationMarker(LatLng position,
       {required Function() onTap}) async {
     if (!isInitialized) await initialize();
@@ -263,6 +274,7 @@ class MarkerService {
     );
   }
 
+  /// Actualiza el conjunto de marcadores según cuál está seleccionado
   Future<Set<Marker>> updateMarkerSelections(
       Set<Marker> markers, String selectedTitle, String defaultTitle) async {
     if (!isInitialized) await initialize();
@@ -290,6 +302,7 @@ class MarkerService {
     return updatedMarkers;
   }
 
+  /// Establece un estilo personalizado para el mapa, ocultando elementos no deseados
   Future<void> setMapStyle(GoogleMapController controller) async {
     // Estilo que oculta puntos de interés, etiquetas y otros elementos del mapa
     const String mapStyle = '''

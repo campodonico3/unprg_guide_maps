@@ -31,17 +31,21 @@ class FlutterMapPage extends StatefulWidget {
 }
 
 class _FlutterMapPageState extends State<FlutterMapPage> {
-  late final MapController _mapController;
-  final MapConstants mapConstants = MapConstants();
+  late final MapController
+      _mapController; // Controlador que maneja la lógica del mapa
+  final MapConstants mapConstants =
+      MapConstants(); // Constantes relacionadas con el mapa
 
   @override
   void initState() {
     super.initState();
+    // Inicializa el controlador del mapa con los parámetros necesarios
     _mapController = MapController(
       initialLatitude: widget.initialLatitude,
       initialLongitude: widget.initialLongitude,
       name: widget.name,
       sigla: widget.sigla,
+      // Solo pasa todas las ubicaciones si se van a mostrar múltiples marcadores
       allLocations: widget.showMultipleMarkers ? widget.locations : null,
       showMultipleMarkers: widget.showMultipleMarkers,
     );
@@ -69,6 +73,7 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       ),
       body: Stack(
         children: [
+          // Widget principal del mapa
           MapWidget(
             mapController: _mapController,
             sigla: widget.sigla,
@@ -80,7 +85,7 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
           NavigationWidget(
             navigationService: _mapController.navigationService,
             onStopNavigation: _mapController.stopNavigation,
-            onToggleVoice: _mapController.toggleVoice, 
+            onToggleVoice: _mapController.toggleVoice,
           ),
           // Card de información
           ListenableBuilder(
@@ -127,6 +132,19 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
     );
   }
 
+  /// Construye el título del AppBar dinámicamente según el contexto
+  String _buildTitle() {
+    if (widget.showMultipleMarkers) {
+      return 'Mapa de Ubicaciones';
+    }
+
+    if (widget.sigla != null && widget.name != null) {
+      return '${widget.sigla} - ${widget.name}';
+    }
+    return 'Mapa';
+  }
+
+  /// Construye el botón flotante dinámicamente según el modo de visualización
   Widget _buildFloatingActionButton() {
     return ListenableBuilder(
       listenable: _mapController,
@@ -164,6 +182,7 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
     );
   }
 
+  /// Construye el card de información para el modo de múltiples marcadores
   Widget _buildMultipleMarkersInfoCard(FacultyItem location) {
     return Card(
       elevation: 8,
@@ -246,11 +265,13 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
     );
   }
 
+  /// Navega a la vista individual de una ubicación específica
+  /// Reemplaza la página actual con una nueva instancia en modo ubicación única
   void _navigateToSingleLocation(FacultyItem location) {
-    // Cerrar el card actual
+    // Oculta el card actual antes de navegar
     _mapController.hideInfoCard();
 
-    // Navegador a la vista individual con navegación
+    // Navega a la vista individual con navegación activada
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -264,24 +285,5 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
         ),
       ),
     );
-  }
-
-  /* void _centerOnUserLocation() {
-    final userMarker = _mapController.userMarker;
-    if (userMarker != null) {
-      // Lógica para centrar en la ubicación del usuario
-      // Puedes implementar esto en el MapController
-    }
-  } */
-
-  String _buildTitle() {
-    if (widget.showMultipleMarkers) {
-      return 'Mapa de Ubicaciones';
-    }
-
-    if (widget.sigla != null && widget.name != null) {
-      return '${widget.sigla} - ${widget.name}';
-    }
-    return 'Mapa';
   }
 }

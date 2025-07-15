@@ -6,7 +6,6 @@ import "package:unprg_guide_maps/data/repositories/faculty_repository.dart";
 import "package:unprg_guide_maps/presentation/pages/home/widgets/faculty_card.dart";
 import "package:unprg_guide_maps/presentation/pages/home/widgets/search_bar_widget.dart";
 import "package:unprg_guide_maps/presentation/pages/map/pages/flutter_map_page.dart";
-//import "package:unprg_guide_maps/presentation/pages/map/pages/flutter_map_page.dart";
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,29 +14,41 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+// Clase de estado para HomePage con SingleTickerProviderStateMixin
+// El mixin es necesario para el TabController (animaciones)
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
+  // Controlador para manejar las pestañas (Facultades/Oficinas)
   late TabController _tabController;
+
+  // Instancia del repositorio para obtener datos
   final FacultyRepository _facultyRepository = FacultyRepository();
 
+  // Lista completa de facultades y oficinas (datos originales)
   late List<FacultyItem> _faculties;
   late List<FacultyItem> _offices;
 
+  // Lista filtrada de facultades y oficinas (para búsqueda)
   late List<FacultyItem> _filteredFaculties;
   late List<FacultyItem> _filteredOffices;
 
+  // Controlador para el campo de texto de búsqueda
   final TextEditingController _searchController = TextEditingController();
+  // Variable para almacenar la consulta de búsqueda actual
   String _searchQuery = '';
 
+  /// Método que se ejecuta cuando el widget se inicializa
   @override
   void initState() {
     super.initState();
+    // Inicializa el controlador de pestañas con 2 pestañas
     _tabController = TabController(length: 2, vsync: this);
 
-    // Inicializar las listas
+    // Inicializar las listas de facultades y oficinas del repositorio
     _faculties = _facultyRepository.getFaculties();
     _offices = _facultyRepository.getOfficies();
 
+    // Inicializa las listas filtradas con todos los elementos
     _filteredFaculties = _faculties;
     _filteredOffices = _offices;
 
@@ -45,6 +56,7 @@ class _HomePageState extends State<HomePage>
     _tabController.addListener(_handleTabChange);
   }
 
+  /// Método que se ejecuta cuando el widget se destruye
   @override
   void dispose() {
     _tabController.removeListener(_handleTabChange);
@@ -53,14 +65,14 @@ class _HomePageState extends State<HomePage>
     super.dispose();
   }
 
-  // Método para manejar el cambio de pestaña
+  /// Método para manejar el cambio de pestaña
   void _handleTabChange() {
     if (_tabController.indexIsChanging) {
       _filterItems(_searchQuery);
     }
   }
 
-  // Método para filtrar los elementos según la búsqueda
+  /// Método para filtrar los elementos según la búsqueda
   void _filterItems(String query) {
     setState(() {
       _searchQuery = query.toLowerCase();
@@ -100,6 +112,7 @@ class _HomePageState extends State<HomePage>
     });
   }
 
+  /// Método principal que construye la interfaz del widget
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,6 +130,7 @@ class _HomePageState extends State<HomePage>
     );
   }
 
+  /// Método para construir la barra superior de la aplicación
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: AppColors.primary,
@@ -137,6 +151,7 @@ class _HomePageState extends State<HomePage>
     );
   }
 
+  /// Método para construir el encabezado
   Widget _buildHeader() {
     return Container(
       height: 100,
@@ -166,6 +181,7 @@ class _HomePageState extends State<HomePage>
     );
   }
 
+  /// Método para construir la barra de búsqueda
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.only(top: 20, left: 16, right: 16),
@@ -176,6 +192,7 @@ class _HomePageState extends State<HomePage>
     );
   }
 
+  /// Método para construir las pestañas (Facultades/Oficinas)
   Widget _buildTabBar() {
     return Container(
       margin: const EdgeInsets.only(top: 16),
@@ -190,12 +207,15 @@ class _HomePageState extends State<HomePage>
           Tab(
             text: 'FACULTADES',
           ),
-          Tab(text: 'OFICINAS'),
+          Tab(
+            text: 'OFICINAS',
+          ),
         ],
       ),
     );
   }
 
+  /// Método para construir el contenido de las pestañas
   Widget _buildTabContent() {
     return Expanded(
       child: TabBarView(
@@ -208,6 +228,7 @@ class _HomePageState extends State<HomePage>
     );
   }
 
+  /// Método para construir la grilla de ubicaciones (facultades u oficinas)
   Widget _buildLocationGrid(List<FacultyItem> items) {
     if (items.isEmpty && _searchQuery.isNotEmpty) {
       return Center(
@@ -253,6 +274,7 @@ class _HomePageState extends State<HomePage>
     );
   }
 
+  /// Método para construir el botón flotante del mapa
   Widget _buildMapButton() {
     return FloatingActionButton(
       backgroundColor: AppColors.primary,
@@ -265,7 +287,7 @@ class _HomePageState extends State<HomePage>
         ];
 
         // Navegar a la página del mapa con las ubicaciones combinadas
-        if(allLocations.isEmpty) return;
+        if (allLocations.isEmpty) return;
 
         // Asegurarse de que haya al menos una ubicación válida
         Navigator.push(

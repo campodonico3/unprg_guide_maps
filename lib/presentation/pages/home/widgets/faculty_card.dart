@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:unprg_guide_maps/core/constants/app_colors.dart';
 import 'package:unprg_guide_maps/core/constants/app_style.dart';
 import 'package:unprg_guide_maps/data/models/faculty_item.dart';
-//import 'package:unprg_guide_maps/presentation/pages/home/widgets/marquee_on_old.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/pages/flutter_map_page.dart';
 
 class FacultyCard extends StatelessWidget {
