@@ -415,26 +415,17 @@ class MapController extends ChangeNotifier {
   }
 
   /// Detiene completamente la navegación
-  void stopNavigation() {
-    // 1. Detener la navegación en el servicio
+  void stopNavigation() async {
     _navigationService.stopNavigation();
-    
-    // 2. Limpiar elementos visuales del mapa
-    _polylines.clear();
-    _currentRoutePoints.clear();
-    
-    // 3. Resetear estado relacionado
-    _currentDestination = null;
-    
-    // 4. Forzar actualización UI
-    notifyListeners();
-    
-    // 5. Opcional: Centrar mapa en ubicación actual
-    if (_userMarker != null) {
-      _googleMapController?.animateCamera(
-        CameraUpdate.newLatLng(_userMarker!.position),
-      );
+
+    final origin = _userMarker?.position;
+    if (origin != null && _currentDestination != null) {
+      // Vuelve a generar la polyline pero sin guía de voz
+      _polylines = await _polylineService.createRoute(origin, _currentDestination!);
     }
+
+    _currentRoutePoints.clear();
+    notifyListeners();
   }
   
   /// Permite reanudar o pausar guía de voz

@@ -89,43 +89,44 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
           ),
           // Card de información
           ListenableBuilder(
-              listenable: _mapController,
-              builder: (_, __) {
-                if (!_mapController.showInfoCard) {
-                  return const SizedBox.shrink();
-                }
+            listenable: _mapController,
+            builder: (_, __) {
+              if (!_mapController.showInfoCard) {
+                return const SizedBox.shrink();
+              }
 
-                if (widget.showMultipleMarkers) {
-                  // Mostrar card para ubicación seleccionada en modo multiples marcadores
-                  final selectedLocation = _mapController.getSelectedLocation();
-                  if (selectedLocation == null) return const SizedBox.shrink();
+              if (widget.showMultipleMarkers) {
+                // Mostrar card para ubicación seleccionada en modo multiples marcadores
+                final selectedLocation = _mapController.getSelectedLocation();
+                if (selectedLocation == null) return const SizedBox.shrink();
 
-                  return Positioned(
-                    bottom: 20,
-                    left: 20,
-                    right: 20,
-                    child: _buildMultipleMarkersInfoCard(selectedLocation),
-                  );
-                } else {
-                  return Positioned(
-                    bottom: 0,
-                    left: 20,
-                    right: 20,
-                    child: InfoCard(
-                      sigla: widget.sigla,
-                      name: widget.name,
-                      latitude: widget.initialLatitude,
-                      longitude: widget.initialLongitude,
-                      onClose: _mapController.hideInfoCard,
-                      imagesUrls: [
-                        'assets/images/img_presentacion_1.png',
-                        'assets/images/img_presentacion_2.jpg',
-                        'assets/images/img_presentacion_3.jpg',
-                      ],
-                    ),
-                  );
-                }
-              })
+                return Positioned(
+                  bottom: 20,
+                  left: 20,
+                  right: 20,
+                  child: _buildMultipleMarkersInfoCard(selectedLocation),
+                );
+              } else {
+                return Positioned(
+                  bottom: 0,
+                  left: 20,
+                  right: 20,
+                  child: InfoCard(
+                    sigla: widget.sigla,
+                    name: widget.name,
+                    latitude: widget.initialLatitude,
+                    longitude: widget.initialLongitude,
+                    onClose: _mapController.hideInfoCard,
+                    imagesUrls: [
+                      'assets/images/img_presentacion_1.png',
+                      'assets/images/img_presentacion_2.jpg',
+                      'assets/images/img_presentacion_3.jpg',
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
         ],
       ),
       floatingActionButton: _buildFloatingActionButton(),
