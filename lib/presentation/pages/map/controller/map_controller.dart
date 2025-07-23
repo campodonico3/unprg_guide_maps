@@ -69,8 +69,10 @@ class MapController extends ChangeNotifier {
 
   /// Tiempo estimado de llegada (minutos)
   int get etaMinutes => _navigationService.estimatedTimeMinutes;
+
   /// Distancia restante formateada
-  String get remainingDistance => _navigationService.formatDistance(_navigationService.remainingDistance);
+  String get remainingDistance =>
+      _navigationService.formatDistance(_navigationService.remainingDistance);
 
   /// Posición inicial de la cámara según el modo(múltiple o único)
   CameraPosition get initialPosition => CameraPosition(
@@ -86,8 +88,8 @@ class MapController extends ChangeNotifier {
     this.sigla,
     this.allLocations,
     this.showMultipleMarkers = false,
-  }){
-    if (!showMultipleMarkers){
+  }) {
+    if (!showMultipleMarkers) {
       _currentDestination = LatLng(initialLatitude, initialLongitude);
     }
   }
@@ -173,7 +175,7 @@ class MapController extends ChangeNotifier {
     for (final location in allLocations!) {
       if (location.latitude != null && location.longitude != null) {
         final isSelected = location.sigla == selectedLocationId;
-        
+
         // Recrear el marcador con el estado de selección correcto
         final marker = await _markerService.createLocationMarkerWithLabel(
           location.sigla,
@@ -185,7 +187,7 @@ class MapController extends ChangeNotifier {
         updatedMarkers.add(marker);
       }
     }
-    
+
     _locationMarkers = updatedMarkers;
     notifyListeners();
   }
@@ -194,7 +196,9 @@ class MapController extends ChangeNotifier {
   FacultyItem? getSelectedLocation() {
     if (_selectedLocationId == null || allLocations == null) return null;
     try {
-      return allLocations!.firstWhere((location) => location.sigla == _selectedLocationId,);
+      return allLocations!.firstWhere(
+        (location) => location.sigla == _selectedLocationId,
+      );
     } catch (_) {
       return null; // Si no se encuentra, retornar null
     }
@@ -208,7 +212,7 @@ class MapController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Manejador genérico para pulsar cualquier marcador 
+  /// Manejador genérico para pulsar cualquier marcador
   void onMarkerTapped(MarkerId markerId) {
     if (showMultipleMarkers) {
       _onLocationMarkerTapped(markerId.value);
@@ -236,14 +240,15 @@ class MapController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Inicia escucha de la ubicación y pide ruta inicial 
+  /// Inicia escucha de la ubicación y pide ruta inicial
   void _startLocationTracking() {
-    _locationSubscription = _locationService.locationStream.listen(_onLocationUpdate);
+    _locationSubscription =
+        _locationService.locationStream.listen(_onLocationUpdate);
 
     // Solo obtener ruta inicial si no es modo múltiples marcadores
-    if (!showMultipleMarkers){
+    if (!showMultipleMarkers) {
       Future.delayed(const Duration(seconds: 1), _getInitialRoute);
-    }    
+    }
   }
 
   /// Manejador actualización de ubicación del usuario
@@ -256,7 +261,7 @@ class MapController extends ChangeNotifier {
     if (_navigationService.isNavigating) {
       _navigationService.updateCurrentLocation(data);
       _googleMapController?.animateCamera(CameraUpdate.newLatLng(pos));
-    } else if(!showMultipleMarkers && _currentDestination != null) {
+    } else if (!showMultipleMarkers && _currentDestination != null) {
       _updatePolyline(pos, _currentDestination!);
     }
 
@@ -279,7 +284,7 @@ class MapController extends ChangeNotifier {
         position: pos,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
         infoWindow: const InfoWindow(title: 'Aquí estás tú'),
-      );    
+      );
     }
     notifyListeners();
   }
@@ -295,12 +300,12 @@ class MapController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Solicita al PolylineService la ruta actual 
+  /// Solicita al PolylineService la ruta actual
   Future<void> _updatePolyline(LatLng origin, LatLng destination) async {
     _polylines = await _polylineService.createRoute(origin, destination);
     //_currentRoutePoints = _polylineService.routePoints;
 
-     // Iniciar o actualizar navegación con voz y TTS
+    // Iniciar o actualizar navegación con voz y TTS
     if (!_navigationService.isNavigating) {
       _navigationService.startNavigation(
         destination: destination,
@@ -314,7 +319,7 @@ class MapController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Obtiene la ubicación actual y calcula la ruta inicial 
+  /// Obtiene la ubicación actual y calcula la ruta inicial
   Future<void> _getInitialRoute() async {
     final loc = await _locationService.getCurrentLocation();
     if (loc != null && _currentDestination != null) {
@@ -338,7 +343,7 @@ class MapController extends ChangeNotifier {
 
   // Método para centrar el mapa en una ubicación específica
   void centerOnLocation(String locationId) {
-     if (allLocations == null || _googleMapController == null) return;
+    if (allLocations == null || _googleMapController == null) return;
     try {
       final loc = allLocations!.firstWhere((l) => l.sigla == locationId);
       if (loc.latitude != null && loc.longitude != null) {
@@ -390,7 +395,7 @@ class MapController extends ChangeNotifier {
     double minLng = validLocations.first.longitude!;
     double maxLng = validLocations.first.longitude!;
 
-    for (final location in validLocations){
+    for (final location in validLocations) {
       minLat = minLat < location.latitude! ? minLat : location.latitude!;
       maxLat = maxLat > location.latitude! ? maxLat : location.latitude!;
       minLng = minLng < location.longitude! ? minLng : location.longitude!;
@@ -398,20 +403,22 @@ class MapController extends ChangeNotifier {
     }
 
     // Incluir ubicación del usuario si está disponible
-    if(_userMarker != null) {
+    if (_userMarker != null) {
       final userPos = _userMarker!.position;
       minLat = minLat < userPos.latitude ? minLat : userPos.latitude;
       maxLat = maxLat > userPos.latitude ? maxLat : userPos.latitude;
       minLng = minLng < userPos.longitude ? minLng : userPos.longitude;
-      maxLng = maxLng > userPos.longitude ? maxLng : userPos.longitude;  
+      maxLng = maxLng > userPos.longitude ? maxLng : userPos.longitude;
     }
 
     final bounds = LatLngBounds(
-      southwest: LatLng(minLat, minLng), 
+      southwest: LatLng(minLat, minLng),
       northeast: LatLng(maxLat, maxLng),
     );
 
-    _googleMapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 100.0),);
+    _googleMapController!.animateCamera(
+      CameraUpdate.newLatLngBounds(bounds, 100.0),
+    );
   }
 
   /// Detiene completamente la navegación
@@ -421,13 +428,14 @@ class MapController extends ChangeNotifier {
     final origin = _userMarker?.position;
     if (origin != null && _currentDestination != null) {
       // Vuelve a generar la polyline pero sin guía de voz
-      _polylines = await _polylineService.createRoute(origin, _currentDestination!);
+      _polylines =
+          await _polylineService.createRoute(origin, _currentDestination!);
     }
 
     _currentRoutePoints.clear();
     notifyListeners();
   }
-  
+
   /// Permite reanudar o pausar guía de voz
   void toggleVoice() {
     _navigationService.toggleVoiceGuidance();
@@ -442,6 +450,33 @@ class MapController extends ChangeNotifier {
   /// Reinicia la navegación actual
   Future<void> restartNavigation() async {
     await _navigationService.restartNavigation();
+  }
+
+  Future<void> setManualRoute(String originText, String destinationText) async {
+    try {
+      // Extraer coordenadas desde texto (esperando que venga como lat,lng)
+      final originParts = originText.split(',');
+      final destinationParts = destinationText.split(',');
+
+      if (originParts.length != 2 || destinationParts.length != 2) {
+        throw Exception('Formato inválido');
+      }
+
+      final origin = LatLng(
+        double.parse(originParts[0].trim()),
+        double.parse(originParts[1].trim()),
+      );
+
+      final destination = LatLng(
+        double.parse(destinationParts[0].trim()),
+        double.parse(destinationParts[1].trim()),
+      );
+
+      _currentDestination = destination;
+      await _updatePolyline(origin, destination);
+    } catch (e) {
+      debugPrint('Error al establecer ruta manual: $e');
+    }
   }
 
   @override

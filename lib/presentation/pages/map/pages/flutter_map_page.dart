@@ -4,6 +4,7 @@ import 'package:unprg_guide_maps/core/constants/map_constants.dart';
 import 'package:unprg_guide_maps/data/models/faculty_item.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/controller/map_controller.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/widgets/info_card.dart';
+import 'package:unprg_guide_maps/presentation/pages/map/widgets/manual_route_input_sheet.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/widgets/map_widget.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/widgets/navigation_widget.dart';
 
@@ -152,13 +153,29 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       builder: (_, __) {
         if (widget.showMultipleMarkers) {
           // En modo multiples marcadores, mostrar botón para ver todas las ubicaciones
-          return FloatingActionButton(
-            onPressed: _mapController.showAllLocations,
-            backgroundColor: AppColors.primary,
-            child: const Icon(
-              Icons.zoom_out_map,
-              color: AppColors.background,
-            ),
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FloatingActionButton(
+                onPressed: _mapController.showAllLocations,
+                backgroundColor: AppColors.primary,
+                child: const Icon(
+                  Icons.zoom_out_map,
+                  color: AppColors.background,
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Boton para editar ubicación
+              FloatingActionButton(
+                heroTag: 'btn-route',
+                onPressed: _showManualRouteDialog,
+                backgroundColor: AppColors.primary,
+                child: const Icon(
+                  Icons.edit_location_alt,
+                  color: AppColors.background,
+                ),
+              ),
+            ],
           );
         } else {
           // Botón original para recalcular ruta
@@ -169,16 +186,59 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
 
           return Padding(
             padding: EdgeInsets.only(bottom: bottomPadding, right: 16),
-            child: FloatingActionButton(
-              onPressed: _mapController.recalculateRoute,
-              backgroundColor: AppColors.primary,
-              child: const Icon(
-                Icons.route,
-                color: AppColors.background,
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Botón para recalcular ruta
+                FloatingActionButton(
+                  onPressed: _mapController.recalculateRoute,
+                  backgroundColor: AppColors.primary,
+                  child: const Icon(
+                    Icons.route,
+                    color: AppColors.background,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // Boton para editar ubicación
+                FloatingActionButton(
+                  heroTag: 'btn-route',
+                  onPressed: _showManualRouteDialog,
+                  backgroundColor: AppColors.primary,
+                  child: const Icon(
+                    Icons.edit_location_alt,
+                    color: AppColors.background,
+                  ),
+                ),
+              ],
             ),
           );
         }
+      },
+    );
+  }
+
+  void _showManualRouteDialog() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.zero,
+      ),
+      builder: (context) {
+        final mediaQuery = MediaQuery.of(context);
+        return SizedBox(
+          height: mediaQuery.size.height * .95,
+          child: Padding(
+            padding: EdgeInsets.only(
+              top: 16,
+              left: 16,
+              right: 16,
+              bottom: mediaQuery.viewInsets.bottom + 16,
+            ),
+            child: ManualRouteInputSheet(),
+          ),
+        );
       },
     );
   }
