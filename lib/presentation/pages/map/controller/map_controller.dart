@@ -32,6 +32,7 @@ class MapController extends ChangeNotifier {
   final List<FacultyItem>? allLocations;
   // Bandera para determinar si mostrar uno o varios marcadores
   final bool showMultipleMarkers;
+  final LatLng? manualOrigin; // Para rutas manuales
 
   // Control interno para mostrar u ocultar el InfoCard
   bool _showInfoCard = false;
@@ -88,6 +89,7 @@ class MapController extends ChangeNotifier {
     this.sigla,
     this.allLocations,
     this.showMultipleMarkers = false,
+    this.manualOrigin,
   }) {
     if (!showMultipleMarkers) {
       _currentDestination = LatLng(initialLatitude, initialLongitude);
@@ -134,7 +136,7 @@ class MapController extends ChangeNotifier {
   }
 
   /// Crea marcadores para cada ubicación en allLocations
-  Future<void> _createMultipleMarkers() async {
+  /* Future<void> _createMultipleMarkers() async {
     if (allLocations == null) return; // No hay ubicaciones
 
     final markers = <Marker>{};
@@ -153,7 +155,7 @@ class MapController extends ChangeNotifier {
     }
     _locationMarkers = markers;
     notifyListeners();
-  }
+  } */
 
   /// Muestra el InfoCard cuando el marcador es pulsado
   void _onLocationMarkerTapped(String locationId) {
@@ -260,7 +262,8 @@ class MapController extends ChangeNotifier {
 
     if (_navigationService.isNavigating) {
       _navigationService.updateCurrentLocation(data);
-      _googleMapController?.animateCamera(CameraUpdate.newLatLng(pos));
+      // La cámara se centra automáticamente en la ubicación actual del usuario
+      // _googleMapController?.animateCamera(CameraUpdate.newLatLng(pos)); 
     } else if (!showMultipleMarkers && _currentDestination != null) {
       _updatePolyline(pos, _currentDestination!);
     }
@@ -321,6 +324,11 @@ class MapController extends ChangeNotifier {
 
   /// Obtiene la ubicación actual y calcula la ruta inicial
   Future<void> _getInitialRoute() async {
+    if (manualOrigin != null && _currentDestination != null) {
+      await _updatePolyline(manualOrigin!, _currentDestination!);
+      return;
+    }
+
     final loc = await _locationService.getCurrentLocation();
     if (loc != null && _currentDestination != null) {
       await _updatePolyline(
@@ -424,6 +432,9 @@ class MapController extends ChangeNotifier {
   /// Detiene completamente la navegación
   void stopNavigation() async {
     _navigationService.stopNavigation();
+
+    notifyListeners();
+    _navigationService.notifyListeners();
 
     final origin = _userMarker?.position;
     if (origin != null && _currentDestination != null) {

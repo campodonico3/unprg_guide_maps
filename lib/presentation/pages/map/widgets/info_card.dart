@@ -436,7 +436,7 @@ class _InfoCardState extends State<InfoCard>
   }
 
   /// Widget que muestra la información de ubicación (latitud y longitud)
-  Widget _buildLocationInfo() {
+  /* Widget _buildLocationInfo() {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -464,7 +464,7 @@ class _InfoCardState extends State<InfoCard>
         ],
       ),
     );
-  }
+  } */
 
   /// Widget que muestra el botón de navegación
   Widget _buildActionButton(BuildContext context) {

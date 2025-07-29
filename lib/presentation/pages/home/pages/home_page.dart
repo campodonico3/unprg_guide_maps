@@ -117,14 +117,17 @@ class _HomePageState extends State<HomePage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      resizeToAvoidBottomInset: true,
       appBar: _buildAppBar(),
-      body: Column(
-        children: [
-          _buildHeader(),
-          _buildSearchBar(),
-          _buildTabBar(),
-          _buildTabContent(),
-        ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            _buildSearchBar(),
+            _buildTabBar(),
+            _buildTabContent(),
+          ],
+        ),
       ),
       floatingActionButton: _buildMapButton(),
     );
@@ -250,8 +253,9 @@ class _HomePageState extends State<HomePage>
       );
     }
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
       child: GridView.builder(
+        padding: const EdgeInsets.only(bottom: 100),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           childAspectRatio: 1.5,

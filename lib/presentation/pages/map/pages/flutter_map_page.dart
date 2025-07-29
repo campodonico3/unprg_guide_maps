@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:unprg_guide_maps/core/constants/app_colors.dart';
 import 'package:unprg_guide_maps/core/constants/map_constants.dart';
 import 'package:unprg_guide_maps/data/models/faculty_item.dart';
@@ -6,7 +7,7 @@ import 'package:unprg_guide_maps/presentation/pages/map/controller/map_controlle
 import 'package:unprg_guide_maps/presentation/pages/map/widgets/info_card.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/widgets/manual_route_input_sheet.dart';
 import 'package:unprg_guide_maps/presentation/pages/map/widgets/map_widget.dart';
-import 'package:unprg_guide_maps/presentation/pages/map/widgets/navigation_widget.dart';
+// import 'package:unprg_guide_maps/presentation/pages/map/widgets/navigation_widget.dart';
 
 class FlutterMapPage extends StatefulWidget {
   final List<FacultyItem> locations;
@@ -14,7 +15,8 @@ class FlutterMapPage extends StatefulWidget {
   final String? sigla;
   final double initialLatitude;
   final double initialLongitude;
-  final bool showMultipleMarkers; // Nueva propiedad
+  final bool showMultipleMarkers;
+  final LatLng? manualOrigin;
 
   const FlutterMapPage({
     super.key,
@@ -23,8 +25,8 @@ class FlutterMapPage extends StatefulWidget {
     this.sigla,
     required this.initialLatitude,
     required this.initialLongitude,
-    this.showMultipleMarkers =
-        false, // Por defecto false para mantener compatibilidad
+    this.showMultipleMarkers = false,
+    this.manualOrigin,
   });
 
   @override
@@ -49,6 +51,7 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
       // Solo pasa todas las ubicaciones si se van a mostrar múltiples marcadores
       allLocations: widget.showMultipleMarkers ? widget.locations : null,
       showMultipleMarkers: widget.showMultipleMarkers,
+      manualOrigin: widget.manualOrigin,
     );
     _mapController.initialize();
   }
@@ -83,11 +86,11 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
             initialLongitude: widget.initialLongitude,
           ),
           // Widget de Navegación
-          NavigationWidget(
+          /* NavigationWidget(
             navigationService: _mapController.navigationService,
             onStopNavigation: _mapController.stopNavigation,
             onToggleVoice: _mapController.toggleVoice,
-          ),
+          ), */
           // Card de información
           ListenableBuilder(
             listenable: _mapController,
@@ -236,7 +239,9 @@ class _FlutterMapPageState extends State<FlutterMapPage> {
               right: 16,
               bottom: mediaQuery.viewInsets.bottom + 16,
             ),
-            child: ManualRouteInputSheet(),
+            child: ManualRouteInputSheet(
+              allLocations: widget.locations,
+            ),
           ),
         );
       },

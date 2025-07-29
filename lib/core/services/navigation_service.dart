@@ -9,7 +9,7 @@ class NavigationService extends ChangeNotifier {
   final FlutterTts _flutterTts = FlutterTts();
   Timer? _navigationTimer;
   StreamSubscription<LocationData>? _locationSubscription;
-  
+
   // Estado de navegación
   bool _isNavigating = false;
   bool _voiceGuidanceEnabled = true; // Controla si la guía de voz está activa
@@ -21,12 +21,13 @@ class NavigationService extends ChangeNotifier {
   LatLng? _destination;
   List<LatLng> _routePoints = [];
   int _currentRouteIndex = 0;
-  
+
   // Configuración de navegación
   static const double _proximityThreshold = 20.0; // metros
   static const double _walkingSpeedKmh = 5.0; // velocidad promedio caminando
-  static const int _instructionIntervalSeconds = 30; // intervalo entre instrucciones
-  
+  static const int _instructionIntervalSeconds =
+      30; // intervalo entre instrucciones
+
   // Getters
   bool get isNavigating => _isNavigating;
   bool get voiceGuidanceEnabled => _voiceGuidanceEnabled;
@@ -35,8 +36,8 @@ class NavigationService extends ChangeNotifier {
   int get estimatedTimeMinutes => _estimatedTimeMinutes;
   String get currentInstruction => _currentInstruction;
   LatLng? get currentLocation => _currentLocation;
-  double get progressPercentage => _totalDistance > 0 
-      ? ((_totalDistance - _remainingDistance) / _totalDistance) * 100 
+  double get progressPercentage => _totalDistance > 0
+      ? ((_totalDistance - _remainingDistance) / _totalDistance) * 100
       : 0.0;
 
   NavigationService() {
@@ -50,12 +51,12 @@ class NavigationService extends ChangeNotifier {
       await _flutterTts.setSpeechRate(0.6);
       await _flutterTts.setVolume(0.8);
       await _flutterTts.setPitch(1.0);
-      
+
       // Configurar callbacks del TTS
       _flutterTts.setErrorHandler((msg) {
         debugPrint('Error TTS: $msg');
       });
-      
+
       _flutterTts.setCompletionHandler(() {
         debugPrint('TTS completado');
       });
@@ -78,23 +79,24 @@ class NavigationService extends ChangeNotifier {
         currentLocationData.longitude!,
       );
       _currentRouteIndex = 0;
-      
+
       // Calcular distancia total
       _totalDistance = _calculateRouteDistance(_routePoints);
       _remainingDistance = _totalDistance;
-      
+
       // Calcular tiempo estimado
-      _estimatedTimeMinutes = (_totalDistance / 1000 * 60 / _walkingSpeedKmh).round();
-      
+      _estimatedTimeMinutes =
+          (_totalDistance / 1000 * 60 / _walkingSpeedKmh).round();
+
       _isNavigating = true;
-      
+
       // Instrucción inicial
       _currentInstruction = 'Navegación iniciada. Sigue la ruta marcada.';
       await _speak(_currentInstruction);
-      
+
       // Iniciar timer para actualizaciones periódicas
       _startNavigationTimer();
-      
+
       notifyListeners();
     } catch (e) {
       debugPrint('Error al iniciar navegación: $e');
@@ -103,40 +105,54 @@ class NavigationService extends ChangeNotifier {
 
   /// Actualiza la ubicación actual durante la navegación
   void updateCurrentLocation(LocationData locationData) {
-    if (!_isNavigating || locationData.latitude == null || locationData.longitude == null) {
+    if (!_isNavigating ||
+        locationData.latitude == null ||
+        locationData.longitude == null) {
       return;
     }
 
     _currentLocation = LatLng(locationData.latitude!, locationData.longitude!);
-    
+
     // Calcular distancia restante
     _remainingDistance = _calculateDistanceToDestination();
-    
+
     // Actualizar tiempo estimado
-    _estimatedTimeMinutes = (_remainingDistance / 1000 * 60 / _walkingSpeedKmh).round();
-    
+    _estimatedTimeMinutes =
+        (_remainingDistance / 1000 * 60 / _walkingSpeedKmh).round();
+
     // Verificar si llegó al destino
     if (_remainingDistance < _proximityThreshold) {
       _arriveAtDestination();
       return;
     }
-    
+
     // Verificar proximidad a puntos de la ruta para dar instrucciones
     _checkRouteProgress();
-    
+
     notifyListeners();
   }
 
   /// Inicia el timer para actualizaciones periódicas de navegación
   void _startNavigationTimer() {
     _navigationTimer?.cancel(); // Asegurar que no haya timers duplicados
+
+    if (!_shouldContinueNavigation()) return; // Verificar antes de crear timer
+
     _navigationTimer = Timer.periodic(
       Duration(seconds: _instructionIntervalSeconds),
       (timer) {
-        if (_isNavigating && _remainingDistance > _proximityThreshold) {
-          _givePeriodicInstruction();
-        } else if (!_isNavigating) {
+        // Verificar estado al inicio de cada ciclo
+        if (!_shouldContinueNavigation()) {
           timer.cancel();
+          _navigationTimer = null;
+          return;
+        }
+
+        if (_remainingDistance > _proximityThreshold) {
+          _givePeriodicInstruction();
+        } else {
+          timer.cancel();
+          _navigationTimer = null;
         }
       },
     );
@@ -144,17 +160,18 @@ class NavigationService extends ChangeNotifier {
 
   /// Da instrucciones periódicas durante la navegación
   void _givePeriodicInstruction() {
-    if (!_voiceGuidanceEnabled) return;
-    
+    if (!_voiceGuidanceEnabled || !_shouldContinueNavigation()) return;
+
     String instruction;
     if (_remainingDistance > 1000) {
-      instruction = 'Continúa por ${(_remainingDistance / 1000).toStringAsFixed(1)} kilómetros. '
+      instruction =
+          'Continúa por ${(_remainingDistance / 1000).toStringAsFixed(1)} kilómetros. '
           'Tiempo estimado: ${formatTime(_estimatedTimeMinutes)}.';
     } else {
       instruction = 'Continúa por ${_remainingDistance.toInt()} metros. '
           'Tiempo estimado: ${formatTime(_estimatedTimeMinutes)}.';
     }
-    
+
     _currentInstruction = instruction;
     _speak(_currentInstruction);
     notifyListeners();
@@ -163,11 +180,11 @@ class NavigationService extends ChangeNotifier {
   /// Verifica el progreso en la ruta y da instrucciones específicas
   void _checkRouteProgress() {
     if (_currentLocation == null || _routePoints.isEmpty) return;
-    
+
     // Encontrar el punto más cercano en la ruta
     double minDistance = double.infinity;
     int nearestIndex = _currentRouteIndex;
-    
+
     for (int i = _currentRouteIndex; i < _routePoints.length; i++) {
       final distance = _calculateDistance(_currentLocation!, _routePoints[i]);
       if (distance < minDistance) {
@@ -175,9 +192,10 @@ class NavigationService extends ChangeNotifier {
         nearestIndex = i;
       }
     }
-    
+
     // Si hemos avanzado significativamente en la ruta
-    if (nearestIndex > _currentRouteIndex + 3) { // Reducido de 5 a 3 para más responsividad
+    if (nearestIndex > _currentRouteIndex + 3) {
+      // Reducido de 5 a 3 para más responsividad
       _currentRouteIndex = nearestIndex;
       _giveDirectionInstruction();
     }
@@ -185,18 +203,21 @@ class NavigationService extends ChangeNotifier {
 
   /// Da instrucciones de dirección basadas en la posición en la ruta
   void _giveDirectionInstruction() {
-    if (_currentRouteIndex >= _routePoints.length - 1 || !_voiceGuidanceEnabled) return;
-    
+    if (_currentRouteIndex >= _routePoints.length - 1 || !_voiceGuidanceEnabled)
+      return;
+
     final currentPoint = _routePoints[_currentRouteIndex];
-    final nextPoint = _routePoints[min(_currentRouteIndex + 1, _routePoints.length - 1)];
-    
+    final nextPoint =
+        _routePoints[min(_currentRouteIndex + 1, _routePoints.length - 1)];
+
     // Calcular dirección aproximada
     final bearing = _calculateBearing(currentPoint, nextPoint);
     final direction = _getDirectionFromBearing(bearing);
-    
+
     final distanceToNext = _calculateDistance(currentPoint, nextPoint);
-    
-    if (distanceToNext > 30) { // Reducido de 50 a 30 metros
+
+    if (distanceToNext > 30) {
+      // Reducido de 50 a 30 metros
       _currentInstruction = 'En ${distanceToNext.toInt()} metros, $direction.';
       _speak(_currentInstruction);
       notifyListeners();
@@ -207,7 +228,7 @@ class NavigationService extends ChangeNotifier {
   void _arriveAtDestination() {
     _currentInstruction = '¡Felicitaciones! Has llegado a tu destino.';
     _speak(_currentInstruction);
-    
+
     // Esperar un poco antes de detener completamente la navegación
     Future.delayed(const Duration(seconds: 3), () {
       stopNavigation();
@@ -217,18 +238,18 @@ class NavigationService extends ChangeNotifier {
   /// Detiene la navegación
   void stopNavigation() {
     debugPrint('Deteniendo navegación...');
-    
+
     // Detener TTS inmediatamente
     _flutterTts.stop();
-    
+
     // Cancelar timer
     _navigationTimer?.cancel();
     _navigationTimer = null;
-    
+
     // Cancelar suscripción de ubicación si existe
     _locationSubscription?.cancel();
     _locationSubscription = null;
-    
+
     // Resetear estado
     _isNavigating = false;
     _totalDistance = 0.0;
@@ -239,7 +260,7 @@ class NavigationService extends ChangeNotifier {
     _destination = null;
     _routePoints.clear();
     _currentLocation = null;
-    
+
     notifyListeners();
     debugPrint('Navegación detenida exitosamente');
   }
@@ -247,7 +268,7 @@ class NavigationService extends ChangeNotifier {
   /// Pausa o reanuda la guía de voz
   void toggleVoiceGuidance() {
     _voiceGuidanceEnabled = !_voiceGuidanceEnabled;
-    
+
     if (_voiceGuidanceEnabled) {
       _currentInstruction = 'Guía de voz activada.';
       _speak(_currentInstruction);
@@ -258,14 +279,18 @@ class NavigationService extends ChangeNotifier {
       _currentInstruction = 'Guía de voz desactivada.';
       debugPrint('Guía de voz desactivada');
     }
-    
+
     notifyListeners();
+  }
+
+  bool _shouldContinueNavigation() {
+    return _isNavigating && _destination != null && _routePoints.isNotEmpty;
   }
 
   /// Reproduce texto usando TTS solo si la guía de voz está habilitada
   Future<void> _speak(String text) async {
     if (!_voiceGuidanceEnabled || text.isEmpty) return;
-    
+
     try {
       await _flutterTts.speak(text);
     } catch (e) {
@@ -276,7 +301,7 @@ class NavigationService extends ChangeNotifier {
   /// Calcula la distancia total de una ruta
   double _calculateRouteDistance(List<LatLng> points) {
     if (points.length < 2) return 0.0;
-    
+
     double totalDistance = 0.0;
     for (int i = 0; i < points.length - 1; i++) {
       totalDistance += _calculateDistance(points[i], points[i + 1]);
@@ -293,17 +318,20 @@ class NavigationService extends ChangeNotifier {
   /// Calcula la distancia entre dos puntos usando la fórmula de Haversine
   double _calculateDistance(LatLng point1, LatLng point2) {
     const double earthRadius = 6371000; // Radio de la Tierra en metros
-    
+
     final double lat1Rad = point1.latitude * (pi / 180);
     final double lat2Rad = point2.latitude * (pi / 180);
     final double deltaLatRad = (point2.latitude - point1.latitude) * (pi / 180);
-    final double deltaLngRad = (point2.longitude - point1.longitude) * (pi / 180);
-    
+    final double deltaLngRad =
+        (point2.longitude - point1.longitude) * (pi / 180);
+
     final double a = sin(deltaLatRad / 2) * sin(deltaLatRad / 2) +
-        cos(lat1Rad) * cos(lat2Rad) *
-        sin(deltaLngRad / 2) * sin(deltaLngRad / 2);
+        cos(lat1Rad) *
+            cos(lat2Rad) *
+            sin(deltaLngRad / 2) *
+            sin(deltaLngRad / 2);
     final double c = 2 * atan2(sqrt(a), sqrt(1 - a));
-    
+
     return earthRadius * c;
   }
 
@@ -311,11 +339,13 @@ class NavigationService extends ChangeNotifier {
   double _calculateBearing(LatLng point1, LatLng point2) {
     final double lat1Rad = point1.latitude * (pi / 180);
     final double lat2Rad = point2.latitude * (pi / 180);
-    final double deltaLngRad = (point2.longitude - point1.longitude) * (pi / 180);
-    
+    final double deltaLngRad =
+        (point2.longitude - point1.longitude) * (pi / 180);
+
     final double y = sin(deltaLngRad) * cos(lat2Rad);
-    final double x = cos(lat1Rad) * sin(lat2Rad) - sin(lat1Rad) * cos(lat2Rad) * cos(deltaLngRad);
-    
+    final double x = cos(lat1Rad) * sin(lat2Rad) -
+        sin(lat1Rad) * cos(lat2Rad) * cos(deltaLngRad);
+
     final double bearing = atan2(y, x) * (180 / pi);
     return (bearing + 360) % 360;
   }
@@ -323,13 +353,17 @@ class NavigationService extends ChangeNotifier {
   /// Convierte un bearing en instrucciones de dirección
   String _getDirectionFromBearing(double bearing) {
     if (bearing >= 337.5 || bearing < 22.5) return 'continúa recto';
-    if (bearing >= 22.5 && bearing < 67.5) return 'gira ligeramente a la derecha';
+    if (bearing >= 22.5 && bearing < 67.5)
+      return 'gira ligeramente a la derecha';
     if (bearing >= 67.5 && bearing < 112.5) return 'gira a la derecha';
-    if (bearing >= 112.5 && bearing < 157.5) return 'gira completamente a la derecha';
+    if (bearing >= 112.5 && bearing < 157.5)
+      return 'gira completamente a la derecha';
     if (bearing >= 157.5 && bearing < 202.5) return 'da la vuelta';
-    if (bearing >= 202.5 && bearing < 247.5) return 'gira completamente a la izquierda';
+    if (bearing >= 202.5 && bearing < 247.5)
+      return 'gira completamente a la izquierda';
     if (bearing >= 247.5 && bearing < 292.5) return 'gira a la izquierda';
-    if (bearing >= 292.5 && bearing < 337.5) return 'gira ligeramente a la izquierda';
+    if (bearing >= 292.5 && bearing < 337.5)
+      return 'gira ligeramente a la izquierda';
     return 'continúa';
   }
 
@@ -344,7 +378,7 @@ class NavigationService extends ChangeNotifier {
 
   /// Formatea el tiempo para mostrar
   String formatTime(int minutes) {
-     if (minutes >= 60) {
+    if (minutes >= 60) {
       final hours = minutes ~/ 60;
       final remainingMinutes = minutes % 60;
       if (remainingMinutes == 0) {
@@ -376,11 +410,11 @@ class NavigationService extends ChangeNotifier {
         'latitude': _currentLocation!.latitude,
         'longitude': _currentLocation!.longitude,
       });
-      
+
       stopNavigation();
-      
+
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       await startNavigation(
         destination: _destination!,
         routePoints: _routePoints,
