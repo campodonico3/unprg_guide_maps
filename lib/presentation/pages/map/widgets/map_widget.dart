@@ -28,7 +28,8 @@ class MapWidget extends StatelessWidget {
           initialCameraPosition: mapController.initialPosition,
           markers: _buildMarkers(),
           polylines: mapController.polylines,
-          myLocationEnabled: !mapController.showMultipleMarkers, // Deshabilitar si usamos marcador personalizado
+          myLocationEnabled: !mapController
+              .showMultipleMarkers, // Deshabilitar si usamos marcador personalizado
           zoomControlsEnabled: false,
         );
       },
@@ -38,33 +39,46 @@ class MapWidget extends StatelessWidget {
   Set<Marker> _buildMarkers() {
     final markers = <Marker>{};
 
-    if(mapController.showMultipleMarkers){
+    if (mapController.showMultipleMarkers) {
       // Modo múltiples marcadores
       markers.addAll(mapController.locationMarkers);
 
       // Agregar marcador de usuario si existe
-      if (mapController.userMarker != null){
+      if (mapController.userMarker != null) {
         markers.add(mapController.userMarker!);
       }
+    } else {
+      // 📍 Modo marcador único (ruta entre 2 puntos)
 
-    }else{
-      // Modo marcador individual (original)
+      // 1. Marcador de destino
       final destinationMarkerId = MarkerId(sigla ?? 'destination_marker');
-
       final destinationMarker = Marker(
         markerId: destinationMarkerId,
         position: LatLng(initialLatitude, initialLongitude),
-        infoWindow: InfoWindow(
-          title: sigla,
-        ),
+        infoWindow: InfoWindow(title: sigla),
         onTap: () {
           mapController.onMarkerTapped(destinationMarkerId);
         },
       );
-
       markers.add(destinationMarker);
 
-      // Agregar marcador de usuario si existe
+      // 2. Marcador de origen manual (si se ha definido)
+      if (mapController.manualOrigin != null) {
+        final originMarkerId = MarkerId(sigla ?? 'destination_marker');
+        final originMarker = Marker(
+          markerId: originMarkerId,
+          position: mapController.manualOrigin!,
+          infoWindow: InfoWindow(title: sigla),
+          icon:
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+          onTap: () {
+            mapController.onMarkerTapped(originMarkerId);
+          },
+        );
+        markers.add(originMarker);
+      }
+
+      // 3. Marcador del usuario (ubicación en tiempo real)
       if (mapController.userMarker != null) {
         final userM = mapController.userMarker!;
         markers.add(userM.copyWith(
